@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Number Game</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { darkMode: 'class' };
+</script>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+    chtml: { displayAlign: 'left' },
+    options: { renderActions: { addMenu: [] } }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+  /* All MathJax CHTML output: cap to viewport width and scroll internally if too wide.
+     MathJax v3 emits `display="true"` only for block math; inline math has no `display` attr,
+     so a single `[jax="CHTML"]` selector covers both — no per-screen-size rule needed. */
+  mjx-container[jax="CHTML"] {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  /* Inline math (no display attr): keep on the line. vertical-align:middle works under
+     overflow:auto; baseline does not. */
+  mjx-container[jax="CHTML"]:not([display="true"]) {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  html { font-size: 17px; }
+  @media (max-width: 640px) {
+    html { font-size: 15px; }
+    body { overflow-x: hidden; }
+    .prose-cp { overflow-wrap: anywhere; word-break: break-word; }
+  }
+  body { background: #0b0f17; color: #e2e8f0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+  .card { background: #111827; border: 1px solid #1f2937; }
+  .pill { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; }
+  .pill-cf      { background: #1e3a8a; color: #bfdbfe; }
+  .pill-at      { background: #064e3b; color: #a7f3d0; }
+  .pill-cses    { background: #4c1d95; color: #ddd6fe; }
+  .pill-spoj    { background: #7c2d12; color: #fed7aa; }
+  .pill-kickstart { background: #831843; color: #fbcfe8; }
+  .pill-zibada  { background: #7f1d1d; color: #fecaca; }
+  .pill-other   { background: #374151; color: #d1d5db; }
+  .pill-easier  { background: #14532d; color: #bbf7d0; }
+  .pill-similar { background: #713f12; color: #fed7aa; }
+  .pill-course  { background: #1e3a8a; color: #bfdbfe; }
+  .pill-concept { background: #4c1d95; color: #e9d5ff; }
+  .pill-intro   { background: #4b5563; color: #e5e7eb; }
+  .pill-problem { background: #115e59; color: #99f6e4; }
+
+  /* Shared rich-text: applies to both explanations and hint bodies */
+  .prose-cp        { font-size: 1.02rem; line-height: 1.75; color: #e5e7eb; }
+  .prose-cp p      { margin: 0.85rem 0; }
+  .prose-cp p:first-child { margin-top: 0; }
+  .prose-cp p:last-child  { margin-bottom: 0; }
+  .prose-cp strong { color: #fbbf24; font-weight: 600; }
+  .prose-cp em     { color: #fde68a; }
+  .prose-cp code   { background: #1f2937; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: #f59e0b; font-size: 0.95em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  .prose-cp ul     { list-style: disc; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp ol     { list-style: decimal; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp li     { margin: 0.35rem 0; }
+  .prose-cp pre    { background: #0d1320; border: 1px solid #1f2937; border-radius: 0.5rem; padding: 0.8rem 1rem; margin: 0.85rem 0; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.92rem; line-height: 1.55; color: #e2e8f0; }
+  .prose-cp pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+  .prose-cp br + br { display: none; }
+
+  .progress-bar { background: linear-gradient(90deg, #10b981 var(--p, 0%), #1f2937 var(--p, 0%)); }
+
+  /* Disclosure summaries: shared chevron pattern. Use class="chev" on the indicator span;
+     it rotates 90° when its parent <details> is open. */
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::marker { content: ""; }
+  .chev { display: inline-block; transition: transform 0.15s ease; color: #6b7280; }
+  details[open] > summary .chev { transform: rotate(90deg); }
+</style>
+</head>
+<body class="min-h-screen">
+<nav class="card border-b border-gray-800 px-4 sm:px-6 py-2 sm:py-3 sticky top-0 z-10 backdrop-blur bg-opacity-90">
+  <div class="max-w-6xl mx-auto flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-3 hover:opacity-80">
+      <span class="text-xl font-bold text-amber-300">Notes</span>
+      
+    </a>
+    <div class="flex items-center gap-4 text-sm">
+      <a href="index.html" class="hover:text-amber-300">Lectures</a>
+      
+      <a href="../" class="text-gray-500 hover:text-amber-300">←</a>
+    </div>
+  </div>
+</nav>
+
+
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+  
+
+<div class="mb-4">
+  <a href="index.html" class="text-sm text-gray-400 hover:text-amber-300">← All lectures</a>
+</div>
+
+
+
+<details class="lecture-head mb-6">
+  <summary class="rounded-lg hover:bg-gray-800/30 -mx-2 px-2 py-2">
+    <div class="flex items-start gap-3">
+      <span class="chev mt-2 text-lg leading-none shrink-0">▸</span>
+      <div class="min-w-0 flex-1 flex items-start justify-between gap-4 flex-wrap">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 text-xs text-gray-400 flex-wrap">
+            <span class="pill pill-problem">problem</span>
+            <span>Module 01</span>
+            <span>·</span>
+            <span>Sorting and Searching</span>
+            <span>·</span>
+            <span>55:26</span>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-bold mt-1 break-words">Number Game</h1>
+          <p class="hidden sm:block text-xs text-gray-500 mt-0.5 font-mono break-words">mod01lec03 - Number Game</p>
+        </div>
+        <div class="flex items-center gap-2">
+          
+        </div>
+      </div>
+    </div>
+  </summary>
+
+  <div class="mt-4">
+    <div class="mb-6">
+      <a href="https://www.youtube.com/watch?v=EDOf-q_Z0Bs"
+         target="_blank" rel="noopener"
+         class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 hover:underline text-sm">
+        ▶ Watch on YouTube ↗
+      </a>
+    </div>
+
+    
+    <section class="card rounded-lg p-4 sm:p-5">
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">Explanation</h2>
+      <div class="prose-cp"><p>Many "number game" problems give you a single integer $n$ and two players who take turns transforming it by some allowed operation (subtract, divide, etc.). The first player who reaches a target state wins. The technique here is <strong>case analysis on the structural properties of $n$</strong> — usually parity (odd/even), whether $n$ is a power of $2$, or how many odd factors it has. The whole game collapses into a tiny lookup table: for each "shape" of $n$, the answer is either "first player wins" or "second player wins".</p>
+
+<p>The intuition is that both players play optimally, so each will hand the opponent the <strong>worst possible position</strong>. A position is "losing" if every move from it leads to a "winning" position for the opponent, and "winning" if at least one move leads to a "losing" position for the opponent. You don't need a search — for these problems the structure is so rigid that you can label small $n$ by hand, spot the pattern, and prove it.</p>
+
+<p>The mechanism is mechanical. <strong>Step 1:</strong> compute the answer for $n = 1, 2, 3, 4, 5, \dots$ by brute force or by hand. <strong>Step 2:</strong> stare at the sequence of W/L labels and look for a feature that explains it — is it just "odd vs even"? "$n \bmod 4$"? "$n$ is a power of $2$"? "$n$ has at least one odd divisor $> 1$"? <strong>Step 3:</strong> prove the pattern by showing each W-position has a move into some L-position, and each L-position only has moves into W-positions.</p>
+
+<p>Tiny example. Suppose the rule is: each turn, subtract any proper divisor of $n$, and whoever reaches $0$ wins. Compute by hand: $n=1$ has no move, so it's L. $n=2$: subtract $1$, reach $1$ (L for opponent) — so $n=2$ is W. $n=3$: subtract $1$, reach $2$ (W for opponent), forced — so $n=3$ is L. $n=4$: subtract $1$ to reach $3$ (L) — so W. The pattern "odd $=$ L, even $=$ W" pops out, and you can prove it because subtracting $1$ flips parity and an even number always has the divisor $1$ available.</p>
+
+<p>Common beginner pitfalls: <strong>(1)</strong> Confusing "I can move" with "I win" — being able to move doesn't help if every move hands the opponent a win. <strong>(2)</strong> Forgetting the <em>tiny</em> base cases, especially $n=1$ and $n=2$. These are where the recursion bottoms out and where most wrong solutions break. <strong>(3)</strong> Generalizing from $n \le 5$ when the real pattern only stabilizes at $n \ge 8$ — always sanity-check your hypothesis on at least one "weird" value like a power of $2$ or a prime. <strong>(4)</strong> Writing a memoized brute force and submitting it; for $n$ up to $10^9$ that TLEs — the case analysis exists precisely so you can answer in $O(\log n)$ or $O(1)$.</p>
+
+<p>Finally, when you read the editorial after solving, you'll often see a one-line condition like "Alice wins iff $n$ is not a power of $2$, except when $n=1$". That terseness is the <em>output</em> of this technique, not its starting point. Your job during the contest is to do the small-case enumeration, conjecture the rule, and convince yourself it's right — that's the actual skill being trained here.</p></div>
+    </section>
+    
+  </div>
+</details>
+
+<!-- Problems -->
+
+<section class="mb-6">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">Problems</h2>
+  <div class="space-y-4">
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-11">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-course">Course</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1800</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1370/C" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Number Game ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: games, math, number theory
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">CF 1370C is the canonical &#39;Number Game&#39; problem on Codeforces, matching the lecture title exactly; it teaches game-state analysis grounded in divisibility, a natural follow-on to sorting/searching fundamentals covered in mod01.</p>
+      </div>
+      
+
+      
+      <p class="text-xs text-gray-500 mt-3 italic">Course problem — see the video and explanation above. No separate hint ladder.</p>
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-12">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-easier">Easier 1</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1300</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1343/C" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Alternating Subsequence ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: greedy
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Drills the core sub-skill of Number Game in isolation: partition a sequence by a property (sign instead of parity), then greedily pick the maximum from each group — same logic, no adversarial turn structure to distract.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Greedy scan with run-length grouping — partition the array into maximal consecutive blocks of the same sign, pick one representative from each.<br><strong>Twist:</strong> Two objectives are stated (maximize length first, then sum), but they collapse into a single observation: every max-length alternating subsequence uses exactly one element per sign-run, so the problem reduces to independent max selections.<br><strong>Builds:</strong> The habit of asking "what structure is forced by the length constraint?" before worrying about the value constraint — a meta-skill that recurs in greedy problems.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (3 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Look at the array and mentally circle consecutive elements that share the same sign (all positive, or all negative, in a row). How many such groups are there? Every alternating subsequence of maximum possible length must somehow "visit" each group — what does that force about how many elements it takes from each group?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Since exactly <strong>one element per consecutive same-sign run</strong> must be chosen (taking more than one from a run would violate alternation; skipping a run entirely would shorten the subsequence), the only remaining freedom is <em>which</em> element within each run to pick. The runs are independent — the choice in one doesn't affect any other — so the greedy optimum is clear: pick the <strong>maximum</strong> value from each run.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Algorithm: scan left to right, tracking the current run's sign; accumulate the <strong>running maximum</strong> within the run; when the sign flips (or the array ends), add that max to the answer and start a new run. One pass, $O(n)$ per test case. Final hint: <code>import sys; input = sys.stdin.readline</code> and print all answers with <code>sys.stdout.write('\n'.join(...))</code> to avoid TLE on $10^4$ test cases. Python sketch:<br><pre>t = int(input())
+out = []
+for _ in range(t):
+    n = int(input())
+    a = list(map(int, input().split()))
+    total = 0
+    i = 0
+    while i < n:
+        sign = a[i] > 0
+        best = a[i]
+        while i < n and (a[i] > 0) == sign:
+            best = max(best, a[i])
+            i += 1
+        total += best
+    out.append(str(total))
+print('\n'.join(out))</pre>Edge case: a single-element array is already a valid alternating subsequence of length 1.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-13">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-easier">Easier 2</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1400</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1102/B" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Array K-Coloring ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: greedy, sortings
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Sort once and distribute elements cyclically across k color groups — directly practices the &#39;sort multiple pools, assign under a per-group constraint&#39; pattern that Number Game uses for its odd and even stacks, but with a simpler, non-adversarial assignment rule.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Greedy assignment on a sorted array — assign colors in round-robin order after sorting by value.<br><strong>Twist:</strong> The output must be in the <em>original</em> array order, not sorted order, so you must track index permutations through the sort. Essentially textbook once the key insight clicks.<br><strong>Builds:</strong> Pattern-recognition for "sort → round-robin" and deriving impossibility conditions via frequency counting.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (4 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                If two elements have the <strong>same value</strong>, can they ever share a color? Think about what this means for a value that appears many times — how many colors does it force you to use at minimum?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                A value that appears $f$ times requires at least $f$ <strong>distinct</strong> colors (one per copy). So the problem is impossible exactly when any value's frequency exceeds $k$. If that condition passes, think about a simple mechanical way to assign colors so equal elements never collide — what ordering makes equal elements easy to separate?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Sort the array by value and assign colors $1, 2, \ldots, k, 1, 2, \ldots, k, \ldots$ (round-robin by sorted rank). Equal elements are <strong>adjacent</strong> in sorted order, so they receive consecutive distinct colors — no collision as long as no value repeats more than $k$ times. Since $n \geq k$ is guaranteed, colors $1 \ldots k$ all appear in the first $k$ sorted positions. To output in original order: sort a list of <em>indices</em> by their values, assign <code>color[original_index] = rank % k + 1</code>.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Code sketch:<br><pre>import sys
+input = sys.stdin.readline
+from collections import Counter
+
+n, k = map(int, input().split())
+a = list(map(int, input().split()))
+
+if max(Counter(a).values()) > k:
+    print("NO")
+else:
+    indices = sorted(range(n), key=lambda i: a[i])
+    color = [0] * n
+    for rank, idx in enumerate(indices):
+        color[idx] = rank % k + 1
+    print("YES")
+    print(*color)</pre>Edge cases: the only failure mode is max frequency $> k$; $n < k$ can't happen per constraints. All $k$ colors are guaranteed used because $n \geq k$ ensures the first $k$ sorted slots cover colors $1 \ldots k$.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-14">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-similar">Similar 1</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1700</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1398/D" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Colored Rectangles ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: dp, greedy, sortings
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Extends Number Game&#39;s two-sorted-pool greedy to three color pools where pure greedy fails — you must layer DP over sorted counts, directly exposing the boundary between sorting+greedy being sufficient versus sorting+DP being required.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> 3D DP over sorted multisets — compress "which pairs were chosen" into "how many per color" by sorting descending first.<br><strong>Twist:</strong> Three-color matching (not two), so greedy fails. A hidden parity constraint — $i+j+k$ must always be even — halves the reachable states and is a useful correctness check.<br><strong>Builds:</strong> Multi-resource allocation DP; the key skill is recognising when sorting lets you replace "which items" with "how many items" as the DP state.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (11 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Try a small case by hand: 2 reds [5, 3], 1 green [4], 1 blue [3]. Pair r[0] with green → 20, then r[1] with blue → 9, total 29. Or pair r[0] with blue → 15, r[1] with green → 12, total 27. The globally largest two sticks (5 and 4) seem obvious to pair — but what if pairing them locks you out of a better total? What does this tell you about a pure greedy approach?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 1: greedy fails because committing a large stick to one color "uses it up," affecting what's available for future pairings across all three colors simultaneously. You need to consider all ways to balance pairings between red-green, red-blue, and green-blue.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Sort all three arrays in descending order. Now notice: <strong>if you use k red pairs at all, you should always use the k largest ones</strong> — a smaller red pair can never outperform a larger one in any rectangle. So the question "which red pairs are used?" collapses to "how many red pairs are used?"
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                That observation applies to all three colors. So the complete state is just a triple <strong>(i, j, k)</strong> = "the first i reds, first j greens, first k blues have been used" (0-indexed). Define <strong>dp[i][j][k]</strong> = maximum total area achievable after consuming exactly those pairs.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Spot a free constraint: $i + j + k$ must always be <strong>even</strong>. Why? Each rectangle consumes exactly 2 pairs (one from each of two colors). After forming $n$ rectangles, total pairs consumed $= 2n$, so $i + j + k = 2n$. States where $i + j + k$ is odd are unreachable — skip them. This is also a useful bug-check.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 6</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                At a valid state (i, j, k) with $i + j + k$ even, the next available pair of each color is r[i], g[j], b[k] (0-indexed). You have three choices for the next rectangle — or you stop:<br>• <strong>Red–Green</strong>: area += r[i]·g[j], move to (i+1, j+1, k)<br>• <strong>Red–Blue</strong>: area += r[i]·b[k], move to (i+1, j, k+1)<br>• <strong>Green–Blue</strong>: area += g[j]·b[k], move to (i, j+1, k+1)
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 7</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Is "stop early" ever optimal? All lengths are ≥ 1, so every rectangle has positive area. But stopping is <em>forced</em>, not chosen — once only one color has remaining pairs, no valid rectangle exists. The DP handles this naturally: each transition requires two different colors to have pairs left.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 8</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                The recurrence, propagating forward from each valid (i, j, k):<br>• if i &lt; R and j &lt; G: dp[i+1][j+1][k] = max(dp[i+1][j+1][k], dp[i][j][k] + r[i]·g[j])<br>• if i &lt; R and k &lt; B: dp[i+1][j][k+1] = max(dp[i+1][j][k+1], dp[i][j][k] + r[i]·b[k])<br>• if j &lt; G and k &lt; B: dp[i][j+1][k+1] = max(dp[i][j+1][k+1], dp[i][j][k] + g[j]·b[k])
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 9</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                State space: $(R+1) \times (G+1) \times (B+1) \le 201^3 \approx 8.1{\rm M}$. Parity halves reachable states to ~4M. Each state is $O(1)$. Total time $O(R \cdot G \cdot B)$, well within 2 seconds.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 10</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                The answer is <strong>max(dp[i][j][k]) over all valid states</strong>, not necessarily dp[R][G][B]. If one color exhausts while others still have pairs, those remaining pairs go unused and dp[R][G][B] may not even be reachable.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 11</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                <pre><code>import sys
+input = sys.stdin.readline
+
+R, G, B = map(int, input().split())
+r = sorted(map(int, input().split()), reverse=True)
+g = sorted(map(int, input().split()), reverse=True)
+b = sorted(map(int, input().split()), reverse=True)
+
+dp = [[[0]*(B+1) for _ in range(G+1)] for _ in range(R+1)]
+ans = 0
+
+for i in range(R+1):
+    for j in range(G+1):
+        for k in range(B+1):
+            if (i+j+k) % 2 != 0:
+                continue
+            v = dp[i][j][k]
+            if v > ans:
+                ans = v
+            if i &lt; R and j &lt; G:
+                dp[i+1][j+1][k] = max(dp[i+1][j+1][k], v + r[i]*g[j])
+            if i &lt; R and k &lt; B:
+                dp[i+1][j][k+1] = max(dp[i+1][j][k+1], v + r[i]*b[k])
+            if j &lt; G and k &lt; B:
+                dp[i][j+1][k+1] = max(dp[i][j+1][k+1], v + g[j]*b[k])
+
+print(ans)
+</code></pre><strong>Perf note:</strong> Python3 will TLE on CF (~8M iterations). Submit with PyPy, or use C++. The algorithm and state space are correct — pure Python overhead is the bottleneck. <code>sys.stdin.readline</code> is already in place; that's the only I/O optimization needed.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-15">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-similar">Similar 2</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1700</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1526/C" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Potions (Hard Version) ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: data structures, greedy
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Fixed sequence order means you can&#39;t sort upfront, so you maintain a min-heap as a live sorted pool — when a potion would drop HP below zero, evict the worst previously-drunk potion; this is Number Game&#39;s &#39;sort pool, pick optimal&#39; idea applied online under adversarial ordering.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Greedy left-to-right scan with <strong>retroactive undo</strong> supported by a min-heap — the "drink everything, regret the worst" template.<br><strong>Twist:</strong> When drinking greedily causes health to go negative, the optimal fix is always to retroactively skip the <em>single most damaging potion drunk so far</em> — not the current one. This look-back is what distinguishes Hard from Easy.<br><strong>Builds:</strong> Recognising when a greedy needs an undo mechanism and choosing the data structure (min-heap as a "regret register") that makes undo $O(\log n)$ instead of $O(n^2)$.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (11 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Walk through a tiny example — say $[-3, 1, -2, 4]$ — and try drinking every potion you can afford in order. When does your running health first go negative, and <strong>which single past decision</strong> do you most wish you could take back?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 1: whenever health dips below zero, the culprit is the <strong>most negative potion you've drunk so far</strong> — not necessarily the current one. Skipping that one potion always gives you the biggest health recovery.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 2: if you could undo that worst past choice, you'd lose one potion from your count but gain back the most health possible — giving yourself the best shot at drinking future potions. Is undoing the minimum <em>always</em> safe, or could it ever make things worse?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 3: it's always safe. After undoing the minimum, health is the highest it could be for any subset of the same size, so you're in the best possible position for the remaining potions. This suggests a bold global strategy: <strong>try to drink every potion</strong>, and whenever you go negative, retroactively skip the worst one you've drunk.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 4: this strategy processes potions strictly left-to-right with no look-ahead — it's a single pass. At each step you need two things: (a) your current running health, and (b) the <strong>minimum-value potion among all potions currently counted as "drunk."</strong> What data structure maintains a retrievable minimum over a dynamically growing multiset?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 6</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 5: a <strong>min-heap</strong> supports push in $O(\log n)$ and pop-min in $O(\log n)$. Python's <code>heapq</code> is a min-heap natively — no negation trick needed here since you want the smallest (most negative) value.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 7</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 6: the invariant to maintain after each step: <strong>health $\geq 0$</strong> and the heap contains exactly the values of potions currently counted as drunk. When you encounter potion $i$: push $h_i$ onto the heap and add $h_i$ to health. Then if health $< 0$, pop the minimum $m$ and subtract $m$ from health (un-drinking that potion).
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 8</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 7: notice the undo step can happen at most <em>once per potion</em> (you pop at most one element per push), so the heap never grows unboundedly and the count is exactly <code>len(heap)</code> at each step. Why is it correct to pop only once — couldn't health still be negative after one pop?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 9</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 8: health can't still be negative after one pop, because before drinking potion $i$ the invariant guaranteed health $\geq 0$, so health $+ h_i \geq h_i$. After popping $m \leq h_i$, health $\geq 0$. This closes the induction: the invariant is restored after at most one pop per step.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 10</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 9: full algorithm — single pass, $O(n \log n)$ time, $O(n)$ space. For each of $n$ potions: push value to heap, add to health; if health $< 0$, pop min and subtract it. Answer = <code>len(heap)</code>.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 11</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Python code sketch — use <code>sys.stdin</code> for fast input and <code>heapq</code>:<br><code>import sys, heapq</code><br><code>input = sys.stdin.readline</code><br><code>n = int(input())</code><br><code>h = list(map(int, input().split()))</code><br><code>heap, health = [], 0</code><br><code>for v in h:</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;heapq.heappush(heap, v); health += v</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;if health &lt; 0: health -= heapq.heappop(heap)</code><br><code>print(len(heap))</code><br>Edge cases: all negative (answer is 0, loop pops everything back out); all positive (answer is n). No special handling needed — the invariant handles both automatically.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+  </div>
+</section>
+
+
+<button id="to-top"
+        aria-label="Back to top"
+        class="fixed bottom-4 right-4 z-20 hidden bg-gray-800/90 hover:bg-gray-700 border border-gray-700
+               text-amber-300 w-11 h-11 rounded-full shadow-lg backdrop-blur text-lg leading-none">↑</button>
+<script>
+  (function(){
+    const btn = document.getElementById('to-top');
+    if (!btn) return;
+    let hidden = true;
+    const onScroll = () => {
+      const shouldHide = window.scrollY < 600;
+      if (shouldHide === hidden) return;
+      btn.classList.toggle('hidden', shouldHide);
+      hidden = shouldHide;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    onScroll();
+  })();
+</script>
+
+
+
+</main>
+
+
+
+</body>
+</html>

@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Notes</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { darkMode: 'class' };
+</script>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+    chtml: { displayAlign: 'left' },
+    options: { renderActions: { addMenu: [] } }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+  /* All MathJax CHTML output: cap to viewport width and scroll internally if too wide.
+     MathJax v3 emits `display="true"` only for block math; inline math has no `display` attr,
+     so a single `[jax="CHTML"]` selector covers both — no per-screen-size rule needed. */
+  mjx-container[jax="CHTML"] {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  /* Inline math (no display attr): keep on the line. vertical-align:middle works under
+     overflow:auto; baseline does not. */
+  mjx-container[jax="CHTML"]:not([display="true"]) {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  html { font-size: 17px; }
+  @media (max-width: 640px) {
+    html { font-size: 15px; }
+    body { overflow-x: hidden; }
+    .prose-cp { overflow-wrap: anywhere; word-break: break-word; }
+  }
+  body { background: #0b0f17; color: #e2e8f0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+  .card { background: #111827; border: 1px solid #1f2937; }
+  .pill { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; }
+  .pill-cf      { background: #1e3a8a; color: #bfdbfe; }
+  .pill-at      { background: #064e3b; color: #a7f3d0; }
+  .pill-cses    { background: #4c1d95; color: #ddd6fe; }
+  .pill-spoj    { background: #7c2d12; color: #fed7aa; }
+  .pill-kickstart { background: #831843; color: #fbcfe8; }
+  .pill-zibada  { background: #7f1d1d; color: #fecaca; }
+  .pill-other   { background: #374151; color: #d1d5db; }
+  .pill-easier  { background: #14532d; color: #bbf7d0; }
+  .pill-similar { background: #713f12; color: #fed7aa; }
+  .pill-course  { background: #1e3a8a; color: #bfdbfe; }
+  .pill-concept { background: #4c1d95; color: #e9d5ff; }
+  .pill-intro   { background: #4b5563; color: #e5e7eb; }
+  .pill-problem { background: #115e59; color: #99f6e4; }
+
+  /* Shared rich-text: applies to both explanations and hint bodies */
+  .prose-cp        { font-size: 1.02rem; line-height: 1.75; color: #e5e7eb; }
+  .prose-cp p      { margin: 0.85rem 0; }
+  .prose-cp p:first-child { margin-top: 0; }
+  .prose-cp p:last-child  { margin-bottom: 0; }
+  .prose-cp strong { color: #fbbf24; font-weight: 600; }
+  .prose-cp em     { color: #fde68a; }
+  .prose-cp code   { background: #1f2937; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: #f59e0b; font-size: 0.95em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  .prose-cp ul     { list-style: disc; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp ol     { list-style: decimal; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp li     { margin: 0.35rem 0; }
+  .prose-cp pre    { background: #0d1320; border: 1px solid #1f2937; border-radius: 0.5rem; padding: 0.8rem 1rem; margin: 0.85rem 0; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.92rem; line-height: 1.55; color: #e2e8f0; }
+  .prose-cp pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+  .prose-cp br + br { display: none; }
+
+  .progress-bar { background: linear-gradient(90deg, #10b981 var(--p, 0%), #1f2937 var(--p, 0%)); }
+
+  /* Disclosure summaries: shared chevron pattern. Use class="chev" on the indicator span;
+     it rotates 90° when its parent <details> is open. */
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::marker { content: ""; }
+  .chev { display: inline-block; transition: transform 0.15s ease; color: #6b7280; }
+  details[open] > summary .chev { transform: rotate(90deg); }
+</style>
+</head>
+<body class="min-h-screen">
+<nav class="card border-b border-gray-800 px-4 sm:px-6 py-2 sm:py-3 sticky top-0 z-10 backdrop-blur bg-opacity-90">
+  <div class="max-w-6xl mx-auto flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-3 hover:opacity-80">
+      <span class="text-xl font-bold text-amber-300">Notes</span>
+      
+    </a>
+    <div class="flex items-center gap-4 text-sm">
+      <a href="index.html" class="hover:text-amber-300">Lectures</a>
+      
+      <a href="../" class="text-gray-500 hover:text-amber-300">←</a>
+    </div>
+  </div>
+</nav>
+
+
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+  
+
+<div class="mb-6 flex items-end justify-between">
+  <div>
+    <h1 class="text-2xl font-bold">Notes</h1>
+    
+  </div>
+</div>
+
+
+<section class="mb-8">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">
+    Module 00 — Course Intro
+    <span class="text-gray-500 font-normal text-xs ml-2">
+      0
+      / 0 done
+    </span>
+  </h2>
+  <div class="grid gap-2">
+    
+    
+    <a href="lecture-1.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">01</span>
+      <span class="pill pill-intro shrink-0">intro</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Competitive Programming</span>
+
+      
+        <span class="text-xs text-gray-600 hidden sm:inline shrink-0">intro — skip</span>
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        10:09
+      </span>
+    </a>
+    
+  </div>
+</section>
+
+<section class="mb-8">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">
+    Module 01 — Sorting and Searching
+    <span class="text-gray-500 font-normal text-xs ml-2">
+      0
+      / 4 done
+    </span>
+  </h2>
+  <div class="grid gap-2">
+    
+    
+    <a href="lecture-2.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">02</span>
+      <span class="pill pill-intro shrink-0">intro</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Welcome and Initial Setup</span>
+
+      
+        <span class="text-xs text-gray-600 hidden sm:inline shrink-0">intro — skip</span>
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        12:21
+      </span>
+    </a>
+    
+    
+    <a href="lecture-3.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">03</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Reversort</span>
+
+      
+        
+          
+          <div class="hidden sm:block w-24 h-2 rounded-full overflow-hidden progress-bar shrink-0"
+               style="--p: 60%">
+          </div>
+          <span class="text-xs text-gray-400 w-10 sm:w-12 text-right shrink-0 tabular-nums">3/5</span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        39:01
+      </span>
+    </a>
+    
+    
+    <a href="lecture-4.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">04</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Engineering Reversort</span>
+
+      
+        
+          
+          <div class="hidden sm:block w-24 h-2 rounded-full overflow-hidden progress-bar shrink-0"
+               style="--p: 0%">
+          </div>
+          <span class="text-xs text-gray-400 w-10 sm:w-12 text-right shrink-0 tabular-nums">0/5</span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        28:11
+      </span>
+    </a>
+    
+    
+    <a href="lecture-5.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">05</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Number Game</span>
+
+      
+        
+          
+          <div class="hidden sm:block w-24 h-2 rounded-full overflow-hidden progress-bar shrink-0"
+               style="--p: 0%">
+          </div>
+          <span class="text-xs text-gray-400 w-10 sm:w-12 text-right shrink-0 tabular-nums">0/5</span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        55:26
+      </span>
+    </a>
+    
+    
+    <a href="lecture-6.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">06</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Will It Stop?</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            <span class="text-red-400">build error</span>
+            
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        17:20
+      </span>
+    </a>
+    
+  </div>
+</section>
+
+<section class="mb-8">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">
+    Module 02 — Sorting and Searching
+    <span class="text-gray-500 font-normal text-xs ml-2">
+      0
+      / 4 done
+    </span>
+  </h2>
+  <div class="grid gap-2">
+    
+    
+    <a href="lecture-7.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">07</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Trouble Sort</span>
+
+      
+        
+          
+          <div class="hidden sm:block w-24 h-2 rounded-full overflow-hidden progress-bar shrink-0"
+               style="--p: 0%">
+          </div>
+          <span class="text-xs text-gray-400 w-10 sm:w-12 text-right shrink-0 tabular-nums">0/5</span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        26:41
+      </span>
+    </a>
+    
+    
+    <a href="lecture-8.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">08</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">The Meeting Place Cannot Be Changed</span>
+
+      
+        
+          
+          <div class="hidden sm:block w-24 h-2 rounded-full overflow-hidden progress-bar shrink-0"
+               style="--p: 0%">
+          </div>
+          <span class="text-xs text-gray-400 w-10 sm:w-12 text-right shrink-0 tabular-nums">0/5</span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        25:26
+      </span>
+    </a>
+    
+    
+    <a href="lecture-9.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">09</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Magic Ship</span>
+
+      
+        
+          
+          <div class="hidden sm:block w-24 h-2 rounded-full overflow-hidden progress-bar shrink-0"
+               style="--p: 0%">
+          </div>
+          <span class="text-xs text-gray-400 w-10 sm:w-12 text-right shrink-0 tabular-nums">0/5</span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        49:23
+      </span>
+    </a>
+    
+    
+    <a href="lecture-10.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">10</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Simple Skewness</span>
+
+      
+        
+          
+          <div class="hidden sm:block w-24 h-2 rounded-full overflow-hidden progress-bar shrink-0"
+               style="--p: 0%">
+          </div>
+          <span class="text-xs text-gray-400 w-10 sm:w-12 text-right shrink-0 tabular-nums">0/5</span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        54:47
+      </span>
+    </a>
+    
+  </div>
+</section>
+
+<section class="mb-8">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">
+    Module 03 — Greedy Algorithms
+    <span class="text-gray-500 font-normal text-xs ml-2">
+      0
+      / 7 done
+    </span>
+  </h2>
+  <div class="grid gap-2">
+    
+    
+    <a href="lecture-11.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">11</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Pancake Flipping</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        40:44
+      </span>
+    </a>
+    
+    
+    <a href="lecture-12.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">12</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Islands War</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        28:07
+      </span>
+    </a>
+    
+    
+    <a href="lecture-13.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">13</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Stable Marriage - I</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        31:26
+      </span>
+    </a>
+    
+    
+    <a href="lecture-14.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">14</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Stable Marriage - II</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        12:18
+      </span>
+    </a>
+    
+    
+    <a href="lecture-15.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">15</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">When Greedy Does Not Work - Coin Change</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        14:38
+      </span>
+    </a>
+    
+    
+    <a href="lecture-16.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">16</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">When Greedy Does Not Work - Guarding a Museum</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        10:33
+      </span>
+    </a>
+    
+    
+    <a href="lecture-17.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">17</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">When Greedy Does Not Work - Traveling Salesman</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        13:12
+      </span>
+    </a>
+    
+  </div>
+</section>
+
+<section class="mb-8">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">
+    Module 04 — DSU (Union-Find) with Path Compression
+    <span class="text-gray-500 font-normal text-xs ml-2">
+      0
+      / 8 done
+    </span>
+  </h2>
+  <div class="grid gap-2">
+    
+    
+    <a href="lecture-18.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">18</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">DSU - Definition and Motivation</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        17:40
+      </span>
+    </a>
+    
+    
+    <a href="lecture-19.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">19</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">DSU via Union by Rank and Path Compression</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        36:57
+      </span>
+    </a>
+    
+    
+    <a href="lecture-20.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">20</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">DSU - Implementation</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        21:52
+      </span>
+    </a>
+    
+    
+    <a href="lecture-21.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">21</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Destroying Array - I (Problem Statement and Solution)</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        16:33
+      </span>
+    </a>
+    
+    
+    <a href="lecture-22.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">22</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Destroying Array - II (Implementation)</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        14:31
+      </span>
+    </a>
+    
+    
+    <a href="lecture-23.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">23</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">War - I (Problem Statement)</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        21:25
+      </span>
+    </a>
+    
+    
+    <a href="lecture-24.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">24</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">War - II (Solution)</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        19:50
+      </span>
+    </a>
+    
+    
+    <a href="lecture-25.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">25</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">War - III (Implementation)</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        12:59
+      </span>
+    </a>
+    
+  </div>
+</section>
+
+<section class="mb-8">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">
+    Module 05 — Graphs (BFS / DFS)
+    <span class="text-gray-500 font-normal text-xs ml-2">
+      0
+      / 5 done
+    </span>
+  </h2>
+  <div class="grid gap-2">
+    
+    
+    <a href="lecture-26.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">26</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Graph Foundations</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        30:07
+      </span>
+    </a>
+    
+    
+    <a href="lecture-27.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">27</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">BFS and DFS</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        32:38
+      </span>
+    </a>
+    
+    
+    <a href="lecture-28.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">28</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Mahmoud and Ehab and the bipartiteness</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        30:43
+      </span>
+    </a>
+    
+    
+    <a href="lecture-29.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">29</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Cover It!</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        16:02
+      </span>
+    </a>
+    
+    
+    <a href="lecture-30.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">30</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Diamond Inheritance</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        28:06
+      </span>
+    </a>
+    
+  </div>
+</section>
+
+<section class="mb-8">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">
+    Module 06 — Shortest Paths (Dijkstra, Bellman-Ford, Floyd-Warshall)
+    <span class="text-gray-500 font-normal text-xs ml-2">
+      0
+      / 8 done
+    </span>
+  </h2>
+  <div class="grid gap-2">
+    
+    
+    <a href="lecture-31.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">31</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">SSSP - Overview BFS Revisited</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        30:24
+      </span>
+    </a>
+    
+    
+    <a href="lecture-32.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">32</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">SSSP and Dijkstra&#39;s Algorithm</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        19:27
+      </span>
+    </a>
+    
+    
+    <a href="lecture-33.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">33</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Sending Email</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        22:21
+      </span>
+    </a>
+    
+    
+    <a href="lecture-34.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">34</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">SSSP and Modified Dijkstra</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        18:06
+      </span>
+    </a>
+    
+    
+    <a href="lecture-35.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">35</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">SSSP with Negative Cycles - Bellman-Ford</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        19:13
+      </span>
+    </a>
+    
+    
+    <a href="lecture-36.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">36</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Wormholes</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        17:23
+      </span>
+    </a>
+    
+    
+    <a href="lecture-37.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">37</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">APSP and Floyd-Warshall</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        14:52
+      </span>
+    </a>
+    
+    
+    <a href="lecture-38.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">38</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Page Hopping</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        15:30
+      </span>
+    </a>
+    
+  </div>
+</section>
+
+<section class="mb-8">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">
+    Module 07 — Minimum Spanning Tree (Prim, Kruskal)
+    <span class="text-gray-500 font-normal text-xs ml-2">
+      0
+      / 6 done
+    </span>
+  </h2>
+  <div class="grid gap-2">
+    
+    
+    <a href="lecture-39.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">39</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Introduction to MSTs</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        18:10
+      </span>
+    </a>
+    
+    
+    <a href="lecture-40.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">40</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Prim&#39;s Algorithm</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        18:22
+      </span>
+    </a>
+    
+    
+    <a href="lecture-41.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">41</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Kruskal&#39;s Algorithm</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        14:04
+      </span>
+    </a>
+    
+    
+    <a href="lecture-42.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">42</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Cherries Mesh</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        18:39
+      </span>
+    </a>
+    
+    
+    <a href="lecture-43.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">43</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Heirarchy</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        21:35
+      </span>
+    </a>
+    
+    
+    <a href="lecture-44.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">44</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Island Hopping</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        22:03
+      </span>
+    </a>
+    
+  </div>
+</section>
+
+<section class="mb-8">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">
+    Module 08 — Network Flow (Ford-Fulkerson, Edmonds-Karp)
+    <span class="text-gray-500 font-normal text-xs ml-2">
+      0
+      / 5 done
+    </span>
+  </h2>
+  <div class="grid gap-2">
+    
+    
+    <a href="lecture-45.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">45</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Introduction to MaxFlow</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        21:00
+      </span>
+    </a>
+    
+    
+    <a href="lecture-46.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">46</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Ford-Fulkerson for MaxFlow</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        25:05
+      </span>
+    </a>
+    
+    
+    <a href="lecture-47.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">47</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Implementing Edmonds-Karp</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        25:19
+      </span>
+    </a>
+    
+    
+    <a href="lecture-48.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">48</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Maximum Matching via MaxFlow</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        22:23
+      </span>
+    </a>
+    
+    
+    <a href="lecture-49.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">49</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Sport Elimination via MaxFlow</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        25:54
+      </span>
+    </a>
+    
+  </div>
+</section>
+
+<section class="mb-8">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">
+    Module 09 — Network Flow II (MaxFlow-MinCut, Vertex Cover)
+    <span class="text-gray-500 font-normal text-xs ml-2">
+      0
+      / 3 done
+    </span>
+  </h2>
+  <div class="grid gap-2">
+    
+    
+    <a href="lecture-50.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">50</span>
+      <span class="pill pill-concept shrink-0">concept</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Maxflow-Mincut Duality</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        20:22
+      </span>
+    </a>
+    
+    
+    <a href="lecture-51.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">51</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Police Chase</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        9:35
+      </span>
+    </a>
+    
+    
+    <a href="lecture-52.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">52</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Sam I AM and Vertex Covers</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        27:54
+      </span>
+    </a>
+    
+  </div>
+</section>
+
+<section class="mb-8">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">
+    Module 10 — Dynamic Programming
+    <span class="text-gray-500 font-normal text-xs ml-2">
+      0
+      / 2 done
+    </span>
+  </h2>
+  <div class="grid gap-2">
+    
+    
+    <a href="lecture-53.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">53</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Top-Down Dynamic Programming with Frog 1_Part A</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        32:11
+      </span>
+    </a>
+    
+    
+    <a href="lecture-54.html" target="_blank" rel="noopener"
+       class="card rounded-lg p-3 hover:border-amber-500/50 transition flex items-center gap-2 sm:gap-3
+              ">
+      <span class="text-gray-500 font-mono text-xs w-7 sm:w-8 text-right shrink-0">54</span>
+      <span class="pill pill-problem shrink-0">problem</span>
+
+      <span class="flex-1 min-w-0 line-clamp-2 sm:line-clamp-1 break-words">Top-Down Dynamic Programming with Frog 1_Part B</span>
+
+      
+        
+          <span class="text-xs text-gray-500 text-right shrink-0">
+            not built
+          </span>
+        
+      
+
+      <span class="text-xs text-gray-500 w-10 sm:w-12 text-right tabular-nums shrink-0">
+        19:57
+      </span>
+    </a>
+    
+  </div>
+</section>
+
+
+
+</main>
+
+</body>
+</html>

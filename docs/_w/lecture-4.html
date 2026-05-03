@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Engineering Reversort</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { darkMode: 'class' };
+</script>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+    chtml: { displayAlign: 'left' },
+    options: { renderActions: { addMenu: [] } }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+  /* All MathJax CHTML output: cap to viewport width and scroll internally if too wide.
+     MathJax v3 emits `display="true"` only for block math; inline math has no `display` attr,
+     so a single `[jax="CHTML"]` selector covers both — no per-screen-size rule needed. */
+  mjx-container[jax="CHTML"] {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  /* Inline math (no display attr): keep on the line. vertical-align:middle works under
+     overflow:auto; baseline does not. */
+  mjx-container[jax="CHTML"]:not([display="true"]) {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  html { font-size: 17px; }
+  @media (max-width: 640px) {
+    html { font-size: 15px; }
+    body { overflow-x: hidden; }
+    .prose-cp { overflow-wrap: anywhere; word-break: break-word; }
+  }
+  body { background: #0b0f17; color: #e2e8f0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+  .card { background: #111827; border: 1px solid #1f2937; }
+  .pill { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; }
+  .pill-cf      { background: #1e3a8a; color: #bfdbfe; }
+  .pill-at      { background: #064e3b; color: #a7f3d0; }
+  .pill-cses    { background: #4c1d95; color: #ddd6fe; }
+  .pill-spoj    { background: #7c2d12; color: #fed7aa; }
+  .pill-kickstart { background: #831843; color: #fbcfe8; }
+  .pill-zibada  { background: #7f1d1d; color: #fecaca; }
+  .pill-other   { background: #374151; color: #d1d5db; }
+  .pill-easier  { background: #14532d; color: #bbf7d0; }
+  .pill-similar { background: #713f12; color: #fed7aa; }
+  .pill-course  { background: #1e3a8a; color: #bfdbfe; }
+  .pill-concept { background: #4c1d95; color: #e9d5ff; }
+  .pill-intro   { background: #4b5563; color: #e5e7eb; }
+  .pill-problem { background: #115e59; color: #99f6e4; }
+
+  /* Shared rich-text: applies to both explanations and hint bodies */
+  .prose-cp        { font-size: 1.02rem; line-height: 1.75; color: #e5e7eb; }
+  .prose-cp p      { margin: 0.85rem 0; }
+  .prose-cp p:first-child { margin-top: 0; }
+  .prose-cp p:last-child  { margin-bottom: 0; }
+  .prose-cp strong { color: #fbbf24; font-weight: 600; }
+  .prose-cp em     { color: #fde68a; }
+  .prose-cp code   { background: #1f2937; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: #f59e0b; font-size: 0.95em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  .prose-cp ul     { list-style: disc; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp ol     { list-style: decimal; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp li     { margin: 0.35rem 0; }
+  .prose-cp pre    { background: #0d1320; border: 1px solid #1f2937; border-radius: 0.5rem; padding: 0.8rem 1rem; margin: 0.85rem 0; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.92rem; line-height: 1.55; color: #e2e8f0; }
+  .prose-cp pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+  .prose-cp br + br { display: none; }
+
+  .progress-bar { background: linear-gradient(90deg, #10b981 var(--p, 0%), #1f2937 var(--p, 0%)); }
+
+  /* Disclosure summaries: shared chevron pattern. Use class="chev" on the indicator span;
+     it rotates 90° when its parent <details> is open. */
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::marker { content: ""; }
+  .chev { display: inline-block; transition: transform 0.15s ease; color: #6b7280; }
+  details[open] > summary .chev { transform: rotate(90deg); }
+</style>
+</head>
+<body class="min-h-screen">
+<nav class="card border-b border-gray-800 px-4 sm:px-6 py-2 sm:py-3 sticky top-0 z-10 backdrop-blur bg-opacity-90">
+  <div class="max-w-6xl mx-auto flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-3 hover:opacity-80">
+      <span class="text-xl font-bold text-amber-300">Notes</span>
+      
+    </a>
+    <div class="flex items-center gap-4 text-sm">
+      <a href="index.html" class="hover:text-amber-300">Lectures</a>
+      
+      <a href="../" class="text-gray-500 hover:text-amber-300">←</a>
+    </div>
+  </div>
+</nav>
+
+
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+  
+
+<div class="mb-4">
+  <a href="index.html" class="text-sm text-gray-400 hover:text-amber-300">← All lectures</a>
+</div>
+
+
+
+<details class="lecture-head mb-6">
+  <summary class="rounded-lg hover:bg-gray-800/30 -mx-2 px-2 py-2">
+    <div class="flex items-start gap-3">
+      <span class="chev mt-2 text-lg leading-none shrink-0">▸</span>
+      <div class="min-w-0 flex-1 flex items-start justify-between gap-4 flex-wrap">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 text-xs text-gray-400 flex-wrap">
+            <span class="pill pill-problem">problem</span>
+            <span>Module 01</span>
+            <span>·</span>
+            <span>Sorting and Searching</span>
+            <span>·</span>
+            <span>28:11</span>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-bold mt-1 break-words">Engineering Reversort</h1>
+          <p class="hidden sm:block text-xs text-gray-500 mt-0.5 font-mono break-words">mod01lec02 - Engineering Reversort</p>
+        </div>
+        <div class="flex items-center gap-2">
+          
+        </div>
+      </div>
+    </div>
+  </summary>
+
+  <div class="mt-4">
+    <div class="mb-6">
+      <a href="https://www.youtube.com/watch?v=AbIF_RLHklE"
+         target="_blank" rel="noopener"
+         class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 hover:underline text-sm">
+        ▶ Watch on YouTube ↗
+      </a>
+    </div>
+
+    
+    <section class="card rounded-lg p-4 sm:p-5">
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">Explanation</h2>
+      <div class="prose-cp"><p><strong>Reversort</strong> is a tiny variant of selection sort. For each position $i$ from $1$ to $N-1$, you find the index $j$ of the minimum element in the suffix $A[i..N]$, then <em>reverse</em> $A[i..j]$ (which slides that minimum into slot $i$). The cost of step $i$ is the length of that reversal, $j - i + 1$, and the total cost of sorting an array is the sum of those lengths. So Reversort behaves like selection sort but pays a variable price each round depending on where the next minimum was hiding.</p>
+
+<p>The first key intuition is to stop thinking about the array and think about the <strong>cost vector</strong> $(c_1, c_2, \dots, c_{N-1})$. At step $i$ the suffix has length $N - i + 1$, so the cost $c_i$ can be any integer from $1$ (the minimum was already in place) up to $N - i + 1$ (it was at the very end). These choices are <strong>independent</strong>: nothing about the previous reversal restricts what the next one can cost. That gives you a clean range for the total: the minimum is $N-1$ (every $c_i = 1$) and the maximum is $2 + 3 + \dots + N = \tfrac{N(N+1)}{2} - 1$.</p>
+
+<p>The second key idea — the engineering trick — is that you can <strong>build a permutation backwards</strong> from any valid cost vector. Imagine the array <em>after</em> Reversort finishes: it's $[1, 2, \dots, N]$. Undo step $N-1$ by reversing a prefix of length $c_{N-1}$ of the suffix $A[N-1..N]$, then undo step $N-2$ on the suffix $A[N-2..N]$, and so on up to step $1$. Each "un-reversal" is just another reversal, so you can simulate it directly. Whatever permutation you end up with at the start is one that Reversort will sort with exactly your chosen costs.</p>
+
+<p>Tiny example with $N = 4$ and target total cost $6$. Pick a vector that sums to $6$, say $(c_1, c_2, c_3) = (3, 2, 1)$ (each within its allowed range $[1,4], [1,3], [1,2]$). Start from $[1,2,3,4]$ and undo in reverse: undo step $3$ with length $1$ — no change, $[1,2,3,4]$. Undo step $2$ with length $2$ on suffix from index $2$: reverse $[2,3]$ to get $[1,3,2,4]$. Undo step $1$ with length $3$ on suffix from index $1$: reverse $[1,3,2]$ to get $[2,3,1,4]$. Run Reversort on $[2,3,1,4]$ and you'll spend exactly $3 + 2 + 1 = 6$.</p>
+
+<p>To hit a target total $C$, the only real work is <strong>distributing $C$ across the $c_i$ ranges</strong>. A clean greedy works: walk $i$ from $1$ to $N-1$ and at each step assign $c_i$ as small as possible while leaving enough room for the later steps to reach $C$ — i.e. ensure the remaining budget fits inside the remaining max-sum. If $C$ is below $N-1$ or above $\tfrac{N(N+1)}{2} - 1$, no permutation exists.</p>
+
+<p><strong>Common beginner pitfalls:</strong></p>
+<ul>
+<li>Mixing up <em>1-indexed</em> and <em>0-indexed</em> ranges. The suffix at step $i$ has length $N - i + 1$, not $N - i$ — off-by-one here breaks every cost bound.</li>
+<li>Forgetting that the cost vector is <em>independent across steps</em>. People try to track "what does the array look like now?" while choosing costs — you don't need to. Pick the vector first, then materialize the array.</li>
+<li>Building the permutation <em>forward</em> instead of backward. There's no easy way to plant the right minima from the front; reversing from the sorted target is what makes it trivial.</li>
+<li>Greedy distribution failures: assigning the maximum to $c_1$ first can leave a remaining $C$ that's smaller than the forced minimum $N - i$ of the remaining steps. Always check feasibility against the <em>remaining</em> bounds, not just the global ones.</li>
+<li>Treating "reverse $A[i..i]$" (cost $1$) as a no-op you can skip. It <em>is</em> a no-op on the array, but it still contributes $1$ to the cost total — that's how you fine-tune $C$.</li>
+</ul></div>
+    </section>
+    
+  </div>
+</details>
+
+<!-- Problems -->
+
+<section class="mb-6">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">Problems</h2>
+  <div class="space-y-4">
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-6">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-course">Course</span>
+        <span class="pill pill-zibada">zibada</span>
+        
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://zibada.guru/gcj/2021qr/problems/#C" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Reversort Engineering ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: sorting, constructive algorithms, greedy, implementation
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Lecture title &#39;Engineering Reversort&#39; directly names this problem — Reversort Engineering is Code Jam 2021 Qualification Round Problem C, the inverse of the Reversort algorithm (given a target cost, construct a valid input array).</p>
+      </div>
+      
+
+      
+      <p class="text-xs text-gray-500 mt-3 italic">Course problem — see the video and explanation above. No separate hint ladder.</p>
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-7">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-easier">Easier 1</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1200</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1352/B" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Same Parity Summands ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: constructive, greedy, math
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Drills the exact two-step skeleton of Reversort Engineering in isolation: compute min/max achievable sums to check feasibility, then greedily fill a target sum with per-element constraints — same pattern, no sequential dependency between positions to complicate it.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Greedy constructive — fix $k-1$ values at the minimum and let the last value absorb the remainder.<br><strong>Twist:</strong> Two independent parity branches (all-odd, all-even) must each be checked: the sum's parity is jointly constrained by $n$'s parity <em>and</em> $k$'s parity, so only one branch (if any) can ever succeed.<br><strong>Builds:</strong> Parity case-analysis; the "fix extremes, adjust one" construction that appears throughout greedy and constructive problems.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (4 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                You need $k$ same-parity positives that sum to $n$. Try small examples by hand: $(n=7, k=3)$, $(n=8, k=3)$, $(n=7, k=2)$. When does it feel impossible — is it about the size of $n$, or something about whether $n$ and $k$ are odd or even?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                There are exactly two cases to try: all numbers odd, or all numbers even. For each case, ask: <strong>what is the smallest achievable sum</strong>, and <strong>what parity must $n$ have</strong>? If $n$ clears both conditions for a case, a valid answer always exists.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                All-odd: minimum sum is $k$ (all 1s); the sum of $k$ odd numbers has parity $k \bmod 2$, so you need $n \bmod 2 = k \bmod 2$ and $n \geq k$. All-even: minimum sum is $2k$ (all 2s); sum is always even, so you need $n$ even and $n \geq 2k$. Try all-odd first; if it fails, try all-even; otherwise output NO.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Code sketch — try all-odd first, fall back to all-even, else NO. Use <code>sys.stdin</code> for speed with $t \leq 1000$:<br><pre>import sys
+input = sys.stdin.readline
+t = int(input())
+out = []
+for _ in range(t):
+    n, k = map(int, input().split())
+    if n % 2 == k % 2 and n >= k:
+        arr = [1] * k; arr[-1] = n - (k - 1)
+        out.append('YES\n' + ' '.join(map(str, arr)))
+    elif n % 2 == 0 and n >= 2 * k:
+        arr = [2] * k; arr[-1] = n - 2 * (k - 1)
+        out.append('YES\n' + ' '.join(map(str, arr)))
+    else:
+        out.append('NO')
+print('\n'.join(out))</pre>Edge cases: $n = k$ (all 1s, always valid since $k \bmod 2 = n \bmod 2$); $k = 1$ (answer is always YES, output $n$ itself). The last element is guaranteed positive because we checked $n \geq k$ or $n \geq 2k$.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-8">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-easier">Easier 2</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1500</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1382/C" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Prefix Flip ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: constructive, greedy, strings
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Uses the same prefix-reversal primitive as Reversort but on a binary string: place each character via at most 2 prefix flip-and-reverse operations, building comfort reasoning about how sequential prefix operations compose before tackling Reversort Engineering&#39;s permutation construction.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Constructive string transformation — fix one position at a time from right to left, each costing at most 2 operations for a clean $\leq 2n$ bound.<br><strong>Twist:</strong> The operation is prefix-reverse-<em>and</em>-complement simultaneously, so you must think about what value lands at the boundary after each flip, not just what gets reversed.<br><strong>Builds:</strong> Constructive proof thinking: design an explicit placement strategy and derive a tight operation count rather than searching for a clever invariant.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (4 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Try solving a length-4 example by hand — fix position 4 first, then 3, 2, 1, ignoring the already-fixed suffix each time. <strong>What is the fewest operations you ever need to correctly set a single position?</strong>
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                After a prefix-flip of length $k$, the character that ends up at position $k$ is the <strong>complement</strong> of whatever was at position 1 before the flip. So to correctly place $b[i-1]$ at position $i$, you need $a[0] = \overline{b[i-1]}$ just before you apply the length-$i$ flip.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                If $a[0] \neq b[i-1]$: one flip of length $i$ suffices (it delivers $\overline{a[0]} = b[i-1]$ to position $i$). If $a[0] = b[i-1]$: first flip length 1 to invert $a[0]$, then flip length $i$. At most <strong>2 ops per position</strong>, so $\leq 2n$ total — well within the $4n$ budget. Iterate $i$ from $n$ down to $1$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Python sketch: represent the string as a list. For each $i$ from $n$ down to $1$: if <code>a[0] == b[i-1]</code>, do <code>a[0] ^= 1</code> and record op <code>1</code>; then reverse-and-flip <code>a[:i]</code> and record op <code>i</code>. Output <code>len(ops)</code> then <code>' '.join(map(str, ops))</code>. Handle <code>a == b</code> with zero ops. At $n \leq 1000$ no I/O tricks are needed.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-9">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-similar">Similar 1</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1700</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1208/D" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Restore Permutation ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: data structures, greedy, constructive
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Conceptual twin of Reversort Engineering: given only the running partial-sum trace produced by a greedy selection algorithm, reconstruct the original permutation by undoing each step right-to-left with a Fenwick tree — same &#39;reverse-engineer a permutation from algorithm output&#39; reasoning, harder because you need an efficient data structure.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Greedy right-to-left reconstruction with a <strong>segment tree walk</strong> that finds the element at a given prefix sum in a dynamically shrinking pool.<br><strong>Twist:</strong> The $s_i$ encoding uniquely determines each $p_i$ — but only when processed from the right. At step $i$ (right to left), the available pool is exactly $\{p_1, \ldots, p_i\}$, turning $s_i$ into a clean prefix-sum query on that pool; from the left, future placements are unknown.<br><strong>Builds:</strong> The find-by-running-sum segment tree walk — a versatile technique that recurs in order-statistics, weighted binary search, and persistent segment tree problems.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (12 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Start with the <strong>last position</strong>. $s_n$ is the sum of all elements before position $n$ that are smaller than $p_n$. How many elements sit before the last position, and which values must they be?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Since $p$ is a permutation, positions $1$ through $n-1$ hold every value in $\{1, \ldots, n\} \setminus \{p_n\}$. Among those, the values smaller than $p_n$ are exactly $\{1, 2, \ldots, p_n - 1\}$ — and all of them appear in positions $1..n-1$ (since $p_n$ is the only value at position $n$). So $s_n = 1 + 2 + \cdots + (p_n - 1) = \frac{p_n(p_n-1)}{2}$, which uniquely pins down $p_n$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Once $p_n$ is removed, the remaining $n-1$ values form the <strong>available pool</strong> for positions $1$ through $n-1$. For position $n-1$: elements before it are at positions $1..n-2$, which are all pool values except $p_{n-1}$ itself. So $s_{n-1}$ = sum of pool values that are $< p_{n-1}$. You need the unique pool element $x$ such that the sum of pool values below $x$ equals $s_{n-1}$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                This generalizes: <strong>process positions right to left</strong>. At step $i$, the pool contains exactly $\{p_1, \ldots, p_i\}$ — all values not yet placed to the right. Find the pool element $x$ where $\sum_{v \in \text{pool},\, v < x} v = s_i$, record it as $p_i$, then remove it from the pool. Repeat down to $i = 1$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 4, each step requires: find $x$ in the pool where the sum of pool values below $x$ equals $s_i$, then remove $x$. A sorted scan is $O(n)$ per step — $O(n^2)$ total, too slow for $n = 2 \times 10^5$. What structure supports both find-by-prefix-sum and deletion in $O(\log n)$?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 6</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Model the pool as an array $\text{avail}[1..n]$ where $\text{avail}[v] = v$ if available, $0$ if removed. The condition becomes $\sum_{v=1}^{x-1} \text{avail}[v] = s_i$. You need to <strong>find $x$ by prefix sum</strong> and then <strong>zero $\text{avail}[x]$</strong> — a dynamic prefix-sum problem on the <em>value</em> axis, not the index axis.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 7</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                A <strong>segment tree</strong> over values $1..n$ — each node storing the sum of available values in its range — handles both operations in $O(\log n)$. Initialize leaf $v$ to value $v$. After picking $p_i = x$, zero leaf $x$ and propagate the change up. The tree maintains the shrinking pool as a live prefix-sum structure.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 8</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                To <strong>find $x$ by prefix sum</strong>, walk from the root with a running target $t = s_i$. At each internal node, let $L$ = left child's sum. If $L \leq t$: $x$ is in the right half (every available left-half value is $< x$, so they account for $L$); subtract $L$ from $t$ and descend right. If $L > t$: $x$ is in the left half; descend left with $t$ unchanged. Stop at a leaf — that leaf's value is $p_i$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 9</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Why the walk is correct: if $x$ is in the right half, all $L$ units from the left subtree are smaller than $x$ and must count toward the prefix sum — the remaining $t - L$ comes from within the right subtree alone. If $x$ is in the left half, all right-subtree values exceed $x$ and are irrelevant, so $t$ stays unchanged. Invariant at every node: $t$ equals the sum of available values in $[lo, x)$ within the current node's range.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 10</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                After the walk identifies $p_i$ at leaf $v$, <strong>zero that leaf and propagate sums up to the root</strong> — a standard point update, $O(\log n)$. Total time: $O(n \log n)$; total space: $O(n)$. Process all $n$ positions right to left, writing results into the answer array in original order.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 11</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Implementation: use a power-of-two size $\text{sz}$ (smallest power of $2 > n$). Leaf for value $v$ sits at tree index $\text{sz} + v$; entries beyond $n$ are initialized to $0$. Internal nodes occupy indices $1..\text{sz}-1$. The walk exits when node $\geq \text{sz}$; the recovered value is node $- \text{sz}$. Ensure $\text{sz} > n$ (not $\geq n$) so leaf $n$ is addressable.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 12</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Code sketch:
+```python
+import sys
+
+def main():
+    data = sys.stdin.buffer.read().split()
+    n = int(data[0])
+    s = list(map(int, data[1:n+1]))
+
+    sz = 1
+    while sz <= n:
+        sz <<= 1
+    tree = [0] * (2 * sz)
+    for v in range(1, n + 1):
+        tree[sz + v] = v
+    for i in range(sz - 1, 0, -1):
+        tree[i] = tree[2*i] + tree[2*i+1]
+
+    def remove(v):
+        i = sz + v
+        tree[i] = 0
+        i >>= 1
+        while i:
+            tree[i] = tree[2*i] + tree[2*i+1]
+            i >>= 1
+
+    def find(t):
+        node = 1
+        while node < sz:
+            left = 2 * node
+            if tree[left] <= t:
+                t -= tree[left]
+                node = left + 1
+            else:
+                node = left
+        return node - sz
+
+    ans = [0] * n
+    for i in range(n - 1, -1, -1):
+        p = find(s[i])
+        ans[i] = p
+        remove(p)
+
+    sys.stdout.write(' '.join(map(str, ans)) + '\n')
+
+main()
+```
+Perf: read all input at once with `sys.stdin.buffer.read()`. Python may TLE on CF for large $n$ — submit in PyPy or rewrite as a Fenwick tree with binary lifting. Edge case: $s[0]$ is always $0$ (nothing precedes the first element), so `find(0)` returns the smallest remaining available value, which is correct.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-10">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-similar">Similar 2</span>
+        <span class="pill pill-atcoder">atcoder</span>
+        
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://atcoder.jp/contests/abc237/tasks/abc237_d" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          LR Insertion ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: constructive, simulation, data structures
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Sharpens sequential-operation reasoning: given a string of L/R commands that insert elements one by one at the left or right of a growing sequence, reconstruct the final permutation by processing the insertions in reverse — mirrors the right-to-left undo strategy needed in Reversort Engineering&#39;s harder inverse problems.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Reverse simulation with a deque — process insertions back-to-front so each "insert adjacent to the previous element" becomes an $O(1)$ append to one end of a deque.<br><strong>Twist:</strong> A non-obvious "same-side" invariant: once element $i$ is placed on one side of $i-1$, all later elements $i+1, \ldots, N$ are forced to land on that same side. Spotting this invariant is the crux; the deque choice falls out naturally.<br><strong>Builds:</strong> The mental reflex to "reverse time" when sequence-construction inserts next to the previous element — converting expensive interior insertions into $O(1)$ end-insertions, a pattern that recurs in constructive and stack/deque problems.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (11 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Simulate $S = $ "LRL" ($N=3$) step by step: $A=[0] \to [1,0] \to [1,2,0] \to [1,3,2,0]$. Look specifically at element 0 — it moves at step 1 and never moves again after that. <strong>Why can element 0 never be displaced after step 1?</strong>
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 1: after step 1, element 0 is pushed to one fixed end and stays there, because every future step inserts element $i$ adjacent to element $i-1$ (never adjacent to 0). So 0 is permanently frozen at its end. <strong>The problem reduces to determining the order of elements $1, 2, \ldots, N$</strong> — then just append 0 at the appropriate end.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                The naive approach — maintain a Python list, track the index of $i-1$, call <code>list.insert(pos, val)</code> — costs $O(N)$ per step (shifting elements), giving $O(N^2)$ total. For $N = 5 \times 10^5$ that is roughly $2.5 \times 10^{11}$ operations: far too slow. The rule "always insert adjacent to the previous element" is suspiciously rigid. <strong>What does this rigidity prevent future elements from doing?</strong>
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Suppose $s_i = $ 'L', so element $i$ lands to the LEFT of $i-1$. The next element, $i+1$, goes left or right of $i$ — but either way, $i+1$ is still to the LEFT of $i-1$ (since $i$ is already left of $i-1$ and $i+1$ is adjacent to $i$). The frontier can swing left or right relative to $i$, but it <strong>can never cross back over $i-1$</strong>.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 4, by induction: <strong>all of elements $i, i+1, \ldots, N$ end up on the same side of $i-1$</strong> in the final answer. The side is fixed at step $i$ by $s_i$: 'L' means all land to the LEFT of $i-1$; 'R' means all land to the RIGHT. Verify: in "LRL", $s_1 = $ 'L' places 1 left of 0, and indeed 1, 3, 2 all appear left of 0 in the final $[1,3,2,0]$. ✓
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 6</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 5: the sub-sequence $\{i, i+1, \ldots, N\}$ is always a <strong>contiguous block</strong> in the final answer, and element $i-1$ sits at exactly one boundary of that block — immediately to the right (if $s_i = $ 'L') or immediately to the left (if $s_i = $ 'R'). Element $i-1$ is never buried inside the block.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 7</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                <strong>Reverse time.</strong> Build the answer backwards: start with block $\{N\}$, then add $N-1, N-2, \ldots, 0$ one by one. By hint 6, each new element $i-1$ always goes to one of the two <strong>ends</strong> of the current block $\{i, \ldots, N\}$. The rule: if $s_i = $ 'L' (element $i$ went left of $i-1$), then $i-1$ goes to the <strong>right end</strong>. If $s_i = $ 'R', $i-1$ goes to the <strong>left end</strong>.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 8</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                The data structure for $O(1)$ insertion at either end is a <strong>deque</strong>. Algorithm: (1) <code>dq = deque([N])</code>. (2) For $i = N, N-1, \ldots, 1$: if <code>S[i-1] == 'L'</code> (0-indexed string), <code>dq.append(i-1)</code>; else <code>dq.appendleft(i-1)</code>. (3) Print <code>dq</code> left-to-right. Total complexity: $O(N)$ time, $O(N)$ space.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 9</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Trace $S = $ "LRL" ($N=3$): start $[3]$; $i=3$, $S[2]=$ 'L' $\to$ <code>append(2)</code> $\to [3,2]$; $i=2$, $S[1]=$ 'R' $\to$ <code>appendleft(1)</code> $\to [1,3,2]$; $i=1$, $S[0]=$ 'L' $\to$ <code>append(0)</code> $\to [1,3,2,0]$. Matches the forward simulation exactly. ✓
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 10</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Boundary check: $S = $ all 'R' gives $[0,1,2,\ldots,N]$ (every step appendleft, building ascending order); $S = $ all 'L' gives $[N,N-1,\ldots,1,0]$ (every step append, building descending order). Run a 3-step trace of each to confirm your direction logic is wired correctly before submitting.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 11</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Code sketch:<br><pre><code>import sys
+from collections import deque
+input = sys.stdin.readline
+
+def main():
+    N = int(input())
+    S = input().strip()
+    dq = deque([N])
+    for i in range(N, 0, -1):
+        if S[i - 1] == 'L':
+            dq.append(i - 1)        # i-1 goes to right end
+        else:
+            dq.appendleft(i - 1)   # i-1 goes to left end
+    sys.stdout.write(' '.join(map(str, dq)) + '\n')
+
+main()</code></pre>Perf notes: use <code>sys.stdin.readline</code> for fast input; <code>sys.stdout.write(' '.join(map(str, dq)))</code> avoids the overhead of unpacking $5 \times 10^5$ elements into <code>print(*dq)</code>.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+  </div>
+</section>
+
+
+<button id="to-top"
+        aria-label="Back to top"
+        class="fixed bottom-4 right-4 z-20 hidden bg-gray-800/90 hover:bg-gray-700 border border-gray-700
+               text-amber-300 w-11 h-11 rounded-full shadow-lg backdrop-blur text-lg leading-none">↑</button>
+<script>
+  (function(){
+    const btn = document.getElementById('to-top');
+    if (!btn) return;
+    let hidden = true;
+    const onScroll = () => {
+      const shouldHide = window.scrollY < 600;
+      if (shouldHide === hidden) return;
+      btn.classList.toggle('hidden', shouldHide);
+      hidden = shouldHide;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    onScroll();
+  })();
+</script>
+
+
+
+</main>
+
+
+
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Competitive Programming</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { darkMode: 'class' };
+</script>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+    chtml: { displayAlign: 'left' },
+    options: { renderActions: { addMenu: [] } }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+  /* All MathJax CHTML output: cap to viewport width and scroll internally if too wide.
+     MathJax v3 emits `display="true"` only for block math; inline math has no `display` attr,
+     so a single `[jax="CHTML"]` selector covers both — no per-screen-size rule needed. */
+  mjx-container[jax="CHTML"] {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  /* Inline math (no display attr): keep on the line. vertical-align:middle works under
+     overflow:auto; baseline does not. */
+  mjx-container[jax="CHTML"]:not([display="true"]) {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  html { font-size: 17px; }
+  @media (max-width: 640px) {
+    html { font-size: 15px; }
+    body { overflow-x: hidden; }
+    .prose-cp { overflow-wrap: anywhere; word-break: break-word; }
+  }
+  body { background: #0b0f17; color: #e2e8f0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+  .card { background: #111827; border: 1px solid #1f2937; }
+  .pill { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; }
+  .pill-cf      { background: #1e3a8a; color: #bfdbfe; }
+  .pill-at      { background: #064e3b; color: #a7f3d0; }
+  .pill-cses    { background: #4c1d95; color: #ddd6fe; }
+  .pill-spoj    { background: #7c2d12; color: #fed7aa; }
+  .pill-kickstart { background: #831843; color: #fbcfe8; }
+  .pill-zibada  { background: #7f1d1d; color: #fecaca; }
+  .pill-other   { background: #374151; color: #d1d5db; }
+  .pill-easier  { background: #14532d; color: #bbf7d0; }
+  .pill-similar { background: #713f12; color: #fed7aa; }
+  .pill-course  { background: #1e3a8a; color: #bfdbfe; }
+  .pill-concept { background: #4c1d95; color: #e9d5ff; }
+  .pill-intro   { background: #4b5563; color: #e5e7eb; }
+  .pill-problem { background: #115e59; color: #99f6e4; }
+
+  /* Shared rich-text: applies to both explanations and hint bodies */
+  .prose-cp        { font-size: 1.02rem; line-height: 1.75; color: #e5e7eb; }
+  .prose-cp p      { margin: 0.85rem 0; }
+  .prose-cp p:first-child { margin-top: 0; }
+  .prose-cp p:last-child  { margin-bottom: 0; }
+  .prose-cp strong { color: #fbbf24; font-weight: 600; }
+  .prose-cp em     { color: #fde68a; }
+  .prose-cp code   { background: #1f2937; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: #f59e0b; font-size: 0.95em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  .prose-cp ul     { list-style: disc; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp ol     { list-style: decimal; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp li     { margin: 0.35rem 0; }
+  .prose-cp pre    { background: #0d1320; border: 1px solid #1f2937; border-radius: 0.5rem; padding: 0.8rem 1rem; margin: 0.85rem 0; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.92rem; line-height: 1.55; color: #e2e8f0; }
+  .prose-cp pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+  .prose-cp br + br { display: none; }
+
+  .progress-bar { background: linear-gradient(90deg, #10b981 var(--p, 0%), #1f2937 var(--p, 0%)); }
+
+  /* Disclosure summaries: shared chevron pattern. Use class="chev" on the indicator span;
+     it rotates 90° when its parent <details> is open. */
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::marker { content: ""; }
+  .chev { display: inline-block; transition: transform 0.15s ease; color: #6b7280; }
+  details[open] > summary .chev { transform: rotate(90deg); }
+</style>
+</head>
+<body class="min-h-screen">
+<nav class="card border-b border-gray-800 px-4 sm:px-6 py-2 sm:py-3 sticky top-0 z-10 backdrop-blur bg-opacity-90">
+  <div class="max-w-6xl mx-auto flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-3 hover:opacity-80">
+      <span class="text-xl font-bold text-amber-300">Notes</span>
+      
+    </a>
+    <div class="flex items-center gap-4 text-sm">
+      <a href="index.html" class="hover:text-amber-300">Lectures</a>
+      
+      <a href="../" class="text-gray-500 hover:text-amber-300">←</a>
+    </div>
+  </div>
+</nav>
+
+
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+  
+
+<div class="mb-4">
+  <a href="index.html" class="text-sm text-gray-400 hover:text-amber-300">← All lectures</a>
+</div>
+
+
+
+<details class="lecture-head mb-6">
+  <summary class="rounded-lg hover:bg-gray-800/30 -mx-2 px-2 py-2">
+    <div class="flex items-start gap-3">
+      <span class="chev mt-2 text-lg leading-none shrink-0">▸</span>
+      <div class="min-w-0 flex-1 flex items-start justify-between gap-4 flex-wrap">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 text-xs text-gray-400 flex-wrap">
+            <span class="pill pill-intro">intro</span>
+            <span>Module 00</span>
+            <span>·</span>
+            <span>Course Intro</span>
+            <span>·</span>
+            <span>10:09</span>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-bold mt-1 break-words">Competitive Programming</h1>
+          <p class="hidden sm:block text-xs text-gray-500 mt-0.5 font-mono break-words">Competitive Programming</p>
+        </div>
+        <div class="flex items-center gap-2">
+          
+            <span class="text-sm text-gray-500">(introductory — no problems)</span>
+          
+        </div>
+      </div>
+    </div>
+  </summary>
+
+  <div class="mt-4">
+    <div class="mb-6">
+      <a href="https://www.youtube.com/watch?v=MY3jR-a29JI"
+         target="_blank" rel="noopener"
+         class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 hover:underline text-sm">
+        ▶ Watch on YouTube ↗
+      </a>
+    </div>
+
+    
+  </div>
+</details>
+
+<!-- Problems -->
+
+
+<button id="to-top"
+        aria-label="Back to top"
+        class="fixed bottom-4 right-4 z-20 hidden bg-gray-800/90 hover:bg-gray-700 border border-gray-700
+               text-amber-300 w-11 h-11 rounded-full shadow-lg backdrop-blur text-lg leading-none">↑</button>
+<script>
+  (function(){
+    const btn = document.getElementById('to-top');
+    if (!btn) return;
+    let hidden = true;
+    const onScroll = () => {
+      const shouldHide = window.scrollY < 600;
+      if (shouldHide === hidden) return;
+      btn.classList.toggle('hidden', shouldHide);
+      hidden = shouldHide;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    onScroll();
+  })();
+</script>
+
+
+
+</main>
+
+
+
+</body>
+</html>

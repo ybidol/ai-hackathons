@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Magic Ship</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { darkMode: 'class' };
+</script>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+    chtml: { displayAlign: 'left' },
+    options: { renderActions: { addMenu: [] } }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+  /* All MathJax CHTML output: cap to viewport width and scroll internally if too wide.
+     MathJax v3 emits `display="true"` only for block math; inline math has no `display` attr,
+     so a single `[jax="CHTML"]` selector covers both — no per-screen-size rule needed. */
+  mjx-container[jax="CHTML"] {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  /* Inline math (no display attr): keep on the line. vertical-align:middle works under
+     overflow:auto; baseline does not. */
+  mjx-container[jax="CHTML"]:not([display="true"]) {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  html { font-size: 17px; }
+  @media (max-width: 640px) {
+    html { font-size: 15px; }
+    body { overflow-x: hidden; }
+    .prose-cp { overflow-wrap: anywhere; word-break: break-word; }
+  }
+  body { background: #0b0f17; color: #e2e8f0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+  .card { background: #111827; border: 1px solid #1f2937; }
+  .pill { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; }
+  .pill-cf      { background: #1e3a8a; color: #bfdbfe; }
+  .pill-at      { background: #064e3b; color: #a7f3d0; }
+  .pill-cses    { background: #4c1d95; color: #ddd6fe; }
+  .pill-spoj    { background: #7c2d12; color: #fed7aa; }
+  .pill-kickstart { background: #831843; color: #fbcfe8; }
+  .pill-zibada  { background: #7f1d1d; color: #fecaca; }
+  .pill-other   { background: #374151; color: #d1d5db; }
+  .pill-easier  { background: #14532d; color: #bbf7d0; }
+  .pill-similar { background: #713f12; color: #fed7aa; }
+  .pill-course  { background: #1e3a8a; color: #bfdbfe; }
+  .pill-concept { background: #4c1d95; color: #e9d5ff; }
+  .pill-intro   { background: #4b5563; color: #e5e7eb; }
+  .pill-problem { background: #115e59; color: #99f6e4; }
+
+  /* Shared rich-text: applies to both explanations and hint bodies */
+  .prose-cp        { font-size: 1.02rem; line-height: 1.75; color: #e5e7eb; }
+  .prose-cp p      { margin: 0.85rem 0; }
+  .prose-cp p:first-child { margin-top: 0; }
+  .prose-cp p:last-child  { margin-bottom: 0; }
+  .prose-cp strong { color: #fbbf24; font-weight: 600; }
+  .prose-cp em     { color: #fde68a; }
+  .prose-cp code   { background: #1f2937; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: #f59e0b; font-size: 0.95em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  .prose-cp ul     { list-style: disc; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp ol     { list-style: decimal; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp li     { margin: 0.35rem 0; }
+  .prose-cp pre    { background: #0d1320; border: 1px solid #1f2937; border-radius: 0.5rem; padding: 0.8rem 1rem; margin: 0.85rem 0; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.92rem; line-height: 1.55; color: #e2e8f0; }
+  .prose-cp pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+  .prose-cp br + br { display: none; }
+
+  .progress-bar { background: linear-gradient(90deg, #10b981 var(--p, 0%), #1f2937 var(--p, 0%)); }
+
+  /* Disclosure summaries: shared chevron pattern. Use class="chev" on the indicator span;
+     it rotates 90° when its parent <details> is open. */
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::marker { content: ""; }
+  .chev { display: inline-block; transition: transform 0.15s ease; color: #6b7280; }
+  details[open] > summary .chev { transform: rotate(90deg); }
+</style>
+</head>
+<body class="min-h-screen">
+<nav class="card border-b border-gray-800 px-4 sm:px-6 py-2 sm:py-3 sticky top-0 z-10 backdrop-blur bg-opacity-90">
+  <div class="max-w-6xl mx-auto flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-3 hover:opacity-80">
+      <span class="text-xl font-bold text-amber-300">Notes</span>
+      
+    </a>
+    <div class="flex items-center gap-4 text-sm">
+      <a href="index.html" class="hover:text-amber-300">Lectures</a>
+      
+      <a href="../" class="text-gray-500 hover:text-amber-300">←</a>
+    </div>
+  </div>
+</nav>
+
+
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+  
+
+<div class="mb-4">
+  <a href="index.html" class="text-sm text-gray-400 hover:text-amber-300">← All lectures</a>
+</div>
+
+
+
+<details class="lecture-head mb-6">
+  <summary class="rounded-lg hover:bg-gray-800/30 -mx-2 px-2 py-2">
+    <div class="flex items-start gap-3">
+      <span class="chev mt-2 text-lg leading-none shrink-0">▸</span>
+      <div class="min-w-0 flex-1 flex items-start justify-between gap-4 flex-wrap">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 text-xs text-gray-400 flex-wrap">
+            <span class="pill pill-problem">problem</span>
+            <span>Module 02</span>
+            <span>·</span>
+            <span>Sorting and Searching</span>
+            <span>·</span>
+            <span>49:23</span>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-bold mt-1 break-words">Magic Ship</h1>
+          <p class="hidden sm:block text-xs text-gray-500 mt-0.5 font-mono break-words">mod02lec07 - Magic Ship</p>
+        </div>
+        <div class="flex items-center gap-2">
+          
+        </div>
+      </div>
+    </div>
+  </summary>
+
+  <div class="mt-4">
+    <div class="mb-6">
+      <a href="https://www.youtube.com/watch?v=iGyw5UzkG2Q"
+         target="_blank" rel="noopener"
+         class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 hover:underline text-sm">
+        ▶ Watch on YouTube ↗
+      </a>
+    </div>
+
+    
+    <section class="card rounded-lg p-4 sm:p-5">
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">Explanation</h2>
+      <div class="prose-cp"><p>Most binary search problems you've seen so far look like "find <code>x</code> in a sorted array." But there's a more powerful pattern hiding in the same idea: <strong>binary search on the answer</strong>. Instead of searching through given data, you search through <em>candidate answers</em> and ask, for each candidate, "is this one feasible?" The trick that makes it work is <strong>monotonicity</strong>: if some answer $k$ works, then every answer larger than $k$ also works (or vice versa). Whenever you can spot that "yes/no" pattern flipping at exactly one threshold, binary search finds the threshold in $O(\log N)$ steps.</p>
+
+<p>The mechanism is a clean three-part recipe. First, identify what you're searching over — usually "minimum number of days," "maximum capacity," "smallest distance," etc. Second, write a <code>check(x)</code> function that returns true if answer $x$ is achievable. Third, binary-search the range $[lo, hi]$ where $lo$ is obviously too small and $hi$ is obviously enough. The classic loop is: while $lo < hi$, take $mid = (lo + hi) / 2$; if <code>check(mid)</code>, set $hi = mid$; else $lo = mid + 1$. At the end $lo = hi$ is the answer.</p>
+
+<p>Why is this a leap forward? <code>check(x)</code> is often <em>much</em> easier to write than "compute the optimal answer directly." You're allowed to assume you have $x$ resources, $x$ days, $x$ budget — and just simulate or use a greedy. The hard optimization problem becomes a sequence of easier feasibility problems.</p>
+
+<p>Tiny example: "What's the minimum integer $d$ such that a robot stepping $+2$ per second covers at least $17$ units?" Brute-force loop works, but binary-search on $d \in [0, 100]$ asks <code>check(d) = (2 \cdot d \ge 17)</code>. <code>check(8)</code> is false ($16 < 17$), <code>check(9)</code> is true ($18 \ge 17$) — so answer is $9$. Trivial here, but the same skeleton handles problems where simulating a single $d$ takes $O(N)$ work and the answer can be up to $10^{18}$.</p>
+
+<p>For Magic Ship specifically, the relevant insight is: <strong>more days never hurt you</strong>. If you can reach the island in $k$ days (the wind pushes you somewhere, and your remaining "free moves" cover the gap), you can also reach it in $k+1$ days — just use one extra free move and step back. That monotonicity is exactly what unlocks binary search on the day count.</p>
+
+<p>Common beginner pitfalls to watch out for:</p>
+<ul>
+<li><strong>Off-by-one in the loop.</strong> Mixing up <code>lo = mid</code> vs <code>lo = mid + 1</code> causes infinite loops. Memorize one shape and stick to it: for "smallest $x$ with check true," use <code>hi = mid</code> / <code>lo = mid + 1</code>.</li>
+<li><strong>Wrong upper bound.</strong> If $hi$ is too small, you'll return a false negative. Pick $hi$ generously — for Magic Ship, think about the worst case where wind cancels out and you must walk the whole Manhattan distance yourself.</li>
+<li><strong>Overflow.</strong> Day counts and coordinates here go up to $10^9$; their products and sums need <code>long long</code> (C++) or Python's arbitrary precision. <code>(lo + hi) / 2</code> can overflow — prefer <code>lo + (hi - lo) / 2</code>.</li>
+<li><strong>Non-monotonic predicate.</strong> Before coding, prove to yourself that "if $k$ works, $k+1$ works." If the predicate flips back and forth, binary search is the wrong tool.</li>
+<li><strong>Expensive <code>check</code>.</strong> Total cost is $O(\log(\text{range}) \cdot \text{check cost})$ — keep <code>check</code> at $O(N)$ or better, or the overall solution will TLE.</li>
+</ul></div>
+    </section>
+    
+  </div>
+</details>
+
+<!-- Problems -->
+
+<section class="mb-6">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">Problems</h2>
+  <div class="space-y-4">
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-17">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-course">Course</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">2200</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1117/E" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Magic Ship ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: binary search, math, implementation
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">CF 1117E is literally titled &#39;Magic Ship&#39; — a binary-search-on-days problem where the ship moves under a periodic wind sequence, making it a direct match for the Sorting and Searching lecture.</p>
+      </div>
+      
+
+      
+      <p class="text-xs text-gray-500 mt-3 italic">Course problem — see the video and explanation above. No separate hint ladder.</p>
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-20">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-easier">Easier 1</span>
+        <span class="pill pill-cses">cses</span>
+        
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://cses.fi/problemset/task/1620" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Factory Machines ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: binary search
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Isolates the &#39;binary search on answer + O(n) feasibility check&#39; skeleton used in Magic Ship — binary search on time T, verify sum(floor(T/k_i)) &gt;= n — with no 2D geometry, so you internalize the predicate structure before adding displacement.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Binary search on the answer — search directly over the time value rather than over configurations.<br><strong>Twist:</strong> Textbook application; the key step is recognising that "given a fixed time, can we hit the target?" is easy to answer, and that this feasibility is monotone in time.<br><strong>Builds:</strong> The core pattern-recognition habit of asking "is there a threshold I can binary-search over?" — the most reusable idea in competitive programming.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (5 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                If someone handed you a candidate answer $T$ seconds, how would you <em>verify</em> it without trying every possible schedule? Try computing something concrete for $T = 8$ in the example (machines with speeds 3, 2, 5).
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 1: in $T$ seconds, machine $i$ independently completes $\lfloor T / k_i \rfloor$ products (it just runs its cycle as many times as it fits). The total you can produce is $\sum_i \lfloor T / k_i \rfloor$. Now ask: as $T$ grows, does this total ever <em>decrease</em>?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 2, the total is non-decreasing — adding one more second never reduces output. This means there is a clean <strong>threshold</strong>: every $T$ below some value is infeasible, every $T$ at or above it is feasible. What search strategy is designed exactly for this shape?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                <strong>Binary search on the answer.</strong> Set <code>lo = 1</code>, <code>hi = min(k) * t</code> (upper bound: the single fastest machine makes all $t$ products alone). At each <code>mid</code>, check <code>sum(mid // ki for ki in k) >= t</code>; if yes, shrink right (<code>hi = mid</code>); if no, shrink left (<code>lo = mid + 1</code>). The answer is <code>lo</code> when the loop exits.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Python code sketch — $O(n \log(\min(k) \cdot t))$:<br><pre>import sys
+input = sys.stdin.readline
+n, t = map(int, input().split())
+k = list(map(int, input().split()))
+lo, hi = 1, min(k) * t
+while lo &lt; hi:
+    mid = (lo + hi) // 2
+    total = 0
+    for ki in k:
+        total += mid // ki
+        if total &gt;= t:   # early exit — no need to keep summing
+            break
+    if total &gt;= t:
+        hi = mid
+    else:
+        lo = mid + 1
+print(lo)</pre>Edge cases: Python big-ints handle the large product <code>min(k)*t</code> (up to ~$10^{18}$) without overflow. The early-exit once <code>total &gt;= t</code> is important for large $n$ — without it you may TLE on worst-case inputs.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-21">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-easier">Easier 2</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1500</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1201/C" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Maximum Median ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: binary search, greedy, prefix sums
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Binary search on a target value with a prefix-sum scan to count required operations — the same search-then-check pattern as Magic Ship applied to a 1D array, building predicate intuition before the 2D wind-drift version.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Binary search on the answer — asking "is median ≥ m achievable?" instead of "what is the best median?", then checking feasibility with a greedy prefix sum.<br><strong>Twist:</strong> The median's rank position in the sorted array makes direct greedy murky, but the monotone cost function (higher target = more operations) makes binary search feel inevitable once you reframe.<br><strong>Builds:</strong> The core instinct of "binary search on the answer" — recognizing when a maximization problem has a monotone yes/no structure and translating it into a cost feasibility check.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (5 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Instead of asking "what's the maximum median I can reach?", try flipping it: ask "can I make the median at least $m$?" As $m$ increases, does this get easier or harder? What does that monotonicity imply about how to search for the answer?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                After sorting the array, the median sits at index $n/2$. For the median to be $\geq m$, you need the element at that index (and everything to its right) to each be $\geq m$. Elements to the left of the median don't matter — <strong>even if you boost them, they don't help the median</strong>. Which elements is it cheapest to push up to $m$?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                The minimum number of operations to achieve median $\geq m$ is $\sum_{i=n/2}^{n-1} \max(0,\; m - a[i])$ after sorting. If this sum $\leq k$, target $m$ is feasible. Notice this cost is <strong>non-decreasing in $m$</strong> — confirming the monotone structure from hint 1.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                <strong>Binary search</strong> on $m$ over the range $[a[n/2],\; a[n/2] + k]$. Use the upper bound $a[n/2] + k$ because even if you pour all $k$ operations into the median element alone, you can't exceed that value. Each feasibility check runs in $O(n)$, giving $O(n \log k)$ total.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Python sketch — watch for the "find maximum" binary search template (add 1 to mid, move lo up):<br><pre>import sys
+input = sys.stdin.readline
+
+def solve():
+    n, k = map(int, input().split())
+    a = list(map(int, input().split()))
+    a.sort()
+    mid = n // 2
+
+    def feasible(m):
+        cost = 0
+        for i in range(mid, n):
+            if a[i] < m:
+                cost += m - a[i]
+                if cost > k:  # early exit
+                    return False
+        return True
+
+    lo, hi = a[mid], a[mid] + k
+    while lo < hi:
+        m = (lo + hi + 1) // 2  # +1 avoids infinite loop when lo+1==hi
+        if feasible(m):
+            lo = m
+        else:
+            hi = m - 1
+    print(lo)
+
+solve()</pre>Edge cases: $n=1$ trivially returns $a[0]+k$; the early-exit in <code>feasible</code> keeps each check fast in practice.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-22">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-similar">Similar 1</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1800</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1358/D" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          The Best Vacation ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: binary search, prefix sums, two pointers
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Sliding window on a doubled circular array with prefix sums — directly exercises the cyclic prefix-sum sub-skill Magic Ship uses to compute cumulative wind displacement after d full wind cycles.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Sliding window / two pointers over a <strong>doubled circular array</strong> with prefix sums.<br><strong>Twist:</strong> Each month contributes variable hugs (day $j$ gives $j$ hugs), so partial-month boundaries require a closed-form triangle formula; the cyclic calendar requires array doubling to linearize year wrap-arounds.<br><strong>Builds:</strong> Recognizing when the optimal window always aligns to a natural boundary (month endpoints here), reducing a continuous positional search to a discrete enumeration — the core insight behind many sliding-window problems.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (10 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Work out the first example by hand: days are {1,1,2,3,1} and you need 2 consecutive days. Try every starting position and list the hugs. <strong>Notice that whenever a month is fully inside your window, there is no choice — you always take every day of it.</strong> Where is the only flexibility?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                The only flexible piece is the <strong>starting partial month</strong>. Since day $j$ gives $j$ hugs, and you can only take $k$ days from a month, which $k$ days maximize hugs — the first $k$ or the last $k$? Does this tell you something about the <em>shape</em> of the optimal left boundary?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                So the optimal window always looks like: <strong>[last $k$ days of some month $L$] + [complete months $L{+}1, L{+}2, \ldots, R$]</strong>, ending exactly at the end of month $R$. This means you only need to <strong>enumerate right endpoints</strong> — one candidate per month — and find the best matching left end for each.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                The trip can <strong>span a year boundary</strong>. The cleanest fix: duplicate the months array to length $2n$. Any window that would wrap around now appears as a contiguous window in the doubled array, and you only need to consider windows in the first $n$ "slots" for the right endpoint (or all $2n$ — it's safe either way).
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Define prefix sums over the doubled array: $P[i] = d_0 + d_1 + \cdots + d_{i-1}$ (cumulative days) and $H[i] = \sum_{j < i} \frac{d_j(d_j+1)}{2}$ (cumulative hugs for complete months). For complete months $[l \ldots r]$, the day count is $P[r+1] - P[l]$ and the hug count is $H[r+1] - H[l]$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 6</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                For a fixed right endpoint $r$, you want the <strong>largest set of complete months $[l \ldots r]$ that still fits in $x$ days</strong> (i.e., $P[r+1] - P[l] \le x$), then fill the leftover $\text{rem} = x - (P[r+1] - P[l])$ days from the <strong>tail of month $l{-}1$</strong>. Can you write a closed form for the hugs from the last $\text{rem}$ days of a $d$-day month?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 7</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                The sum of the last $k$ days of a $d$-day month is $d + (d-1) + \cdots + (d-k+1) = \frac{k(2d - k + 1)}{2}$. You now have <strong>all pieces</strong> to evaluate any candidate window. The total hugs for right endpoint $r$ with left boundary starting at $l$ is $(H[r+1] - H[l]) + \frac{\text{rem}(2d_{l-1} - \text{rem} + 1)}{2}$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 8</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Now think about efficiency. As $r$ increases by one (moving right), can $l$ ever move <em>left</em>? Adding a new month on the right only makes the window larger, so $l$ can only <strong>stay or advance right</strong>. This monotonicity means both pointers together traverse the array at most once — $O(n)$ total work.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 9</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                <strong>Two-pointer algorithm:</strong> initialize $l = 0$; for each $r$ from $0$ to $2n-1$, advance $l$ forward while $P[r+1] - P[l] > x$. After the loop, months $[l \ldots r]$ all fit in $x$ days; compute $\text{rem}$ and the partial-month hugs from month $l{-}1$; update the running maximum. Skip the partial term when $l = 0$ (no month to the left) or $\text{rem} = 0$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 10</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Python code sketch — edge cases and perf notes inline:<br><pre><code>import sys
+input = sys.stdin.readline
+
+def solve():
+    n, x = map(int, input().split())
+    d = list(map(int, input().split()))
+    d = d * 2          # linearize circular calendar
+    m = 2 * n
+    pdays = [0] * (m + 1)
+    phugs = [0] * (m + 1)
+    for i in range(m):
+        pdays[i+1] = pdays[i] + d[i]
+        phugs[i+1] = phugs[i] + d[i] * (d[i] + 1) // 2
+    ans = 0
+    l = 0
+    for r in range(m):
+        while pdays[r+1] - pdays[l] > x:
+            l += 1
+        rem = x - (pdays[r+1] - pdays[l])
+        hugs = phugs[r+1] - phugs[l]
+        if rem > 0 and l > 0:
+            dl = d[l - 1]
+            hugs += rem * (2 * dl - rem + 1) // 2
+        ans = max(ans, hugs)
+    print(ans)
+
+solve()
+</code></pre>Answers can reach ~$10^{16}$ (Python big-ints handle this fine). When $l=0$ and $\text{rem}>0$ the window isn't full yet — the maximum will be found once $r$ is large enough that a full $x$-day window exists.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-23">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-similar">Similar 2</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1800</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1543/D" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          RPG Protagonist ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: binary search, greedy, prefix sums, sorting
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Enumerate one warrior&#39;s heavy-item count, binary-search the other&#39;s remaining capacity via sorted prefix sums — nested binary search with prefix-sum feasibility lookup, the natural harder extension of Magic Ship&#39;s single binary search + displacement check.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Greedy prefix selection (always take lightest items) combined with binary search — enumerate one dimension, binary-search the other.<br><strong>Twist:</strong> The hard constraint is that one person carries <em>only swords</em> and the other carries <em>only shields</em> — which collapses the combinatorial allocation into two independent prefix-count decisions.<br><strong>Builds:</strong> The habit of "sort + prefix sums + binary search" as a unit; recognizing when an enumeration-over-one-variable trick reduces a 2D optimization to 1D.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (10 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Work through a tiny example by hand: 3 swords [2, 5, 9], 3 shields [1, 4, 7], person A can carry weight 10, person B can carry weight 8. You're trying to maximize total items carried. Notice that once you decide <strong>how many swords person A takes</strong>, is there any remaining choice in <em>which</em> swords they take?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 1: if you're taking $k$ swords to maximize count, you always want the $k$ <strong>lightest</strong> swords — heavier ones only hurt. So sorting swords ascending and reading a prefix is always optimal for a given count. The same logic applies to shields independently. Both people are just choosing a prefix of their sorted array.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Here is the structural constraint that dominates everything: one person carries <strong>only swords</strong>, the other carries <strong>only shields</strong>. There is no mixing. So the entire allocation is determined by exactly two integers: how many swords one person takes, and how many shields the other takes — both from sorted prefixes.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Build the prefix sums: $\text{ps}[k]$ = weight of the $k$ lightest swords, $\text{pp}[j]$ = weight of the $j$ lightest shields. Checking "can person A carry $k$ swords?" is now $O(1)$: just verify $\text{ps}[k] \leq W_A$. This means you can <strong>enumerate all valid $k$</strong> in a single pass.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 4: for each valid $k$ (swords person A takes, with $\text{ps}[k] \leq W_A$), person B independently wants the <strong>largest $j$</strong> such that $\text{pp}[j] \leq W_B$. Since $\text{pp}$ is strictly increasing (all weights are positive), this largest valid $j$ is found by <strong>binary search</strong> on the prefix-sum array.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 6</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Now the shape of the solution is clear: sort both arrays ascending, build prefix sums. Enumerate $k$ from 0 to the largest valid sword count. For each $k$, binary-search $\text{pp}$ for the largest $j$ with $\text{pp}[j] \leq W_B$. Track $\max(k + j)$. Each loop iteration is $O(\log m)$, total loop is $O(n \log m)$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 7</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Critical: you also need to try <strong>swapping roles</strong> — person A carries shields (up to $W_A$), person B carries swords (up to $W_B$). Run the same enumeration with the arrays and weight limits exchanged. The final answer is the maximum across both role assignments. Missing this swap is the most common wrong answer.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 8</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Verify your indexing convention: use a prefix-sum array of length $n+1$ where index 0 means "0 items, weight 0". Then $\text{bisect\_right}(\text{pp}, W_B) - 1$ gives the largest $j$ with $\text{pp}[j] \leq W_B$, and since $\text{pp}[0] = 0$, the result is always $\geq 0$ even when $W_B = 0$. This handles the edge case of one person carrying nothing automatically.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 9</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Complexity: $O(n \log n + m \log m)$ for sorting. Two enumeration passes of length $n$ and $m$ respectively, each with an $O(\log m)$ or $O(\log n)$ binary search. Total $O((n+m)\log(n+m))$. With $n, m \leq 2 \times 10^5$, this is comfortably within limits.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 10</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Final hint — Python code sketch with edge-case handling and performance notes:<br><pre><code>import sys
+from bisect import bisect_right
+input = sys.stdin.readline
+
+def solve():
+    n, m, W1, W2 = map(int, input().split())
+    s = sorted(map(int, input().split()))
+    p = sorted(map(int, input().split()))
+
+    ps = [0] * (n + 1)  # prefix sums of swords
+    for i in range(n): ps[i+1] = ps[i] + s[i]
+    pp = [0] * (m + 1)  # prefix sums of shields
+    for i in range(m): pp[i+1] = pp[i] + p[i]
+
+    ans = 0
+    # Role 1: person 1 takes swords (W1), person 2 takes shields (W2)
+    for k in range(n + 1):
+        if ps[k] > W1: break
+        j = bisect_right(pp, W2) - 1
+        ans = max(ans, k + j)
+    # Role 2: person 1 takes shields (W1), person 2 takes swords (W2)
+    for k in range(m + 1):
+        if pp[k] > W1: break
+        j = bisect_right(ps, W2) - 1
+        ans = max(ans, k + j)
+
+    print(ans)
+
+solve()
+</code></pre>Perf note: <code>sys.stdin.readline</code> is essential here. The <code>break</code> in each loop is valid because prefix sums are monotonically increasing — once $\text{ps}[k] > W_1$ no larger $k$ can be valid.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+  </div>
+</section>
+
+
+<button id="to-top"
+        aria-label="Back to top"
+        class="fixed bottom-4 right-4 z-20 hidden bg-gray-800/90 hover:bg-gray-700 border border-gray-700
+               text-amber-300 w-11 h-11 rounded-full shadow-lg backdrop-blur text-lg leading-none">↑</button>
+<script>
+  (function(){
+    const btn = document.getElementById('to-top');
+    if (!btn) return;
+    let hidden = true;
+    const onScroll = () => {
+      const shouldHide = window.scrollY < 600;
+      if (shouldHide === hidden) return;
+      btn.classList.toggle('hidden', shouldHide);
+      hidden = shouldHide;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    onScroll();
+  })();
+</script>
+
+
+
+</main>
+
+
+
+</body>
+</html>

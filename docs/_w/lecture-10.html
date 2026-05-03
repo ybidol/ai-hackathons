@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Simple Skewness</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { darkMode: 'class' };
+</script>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+    chtml: { displayAlign: 'left' },
+    options: { renderActions: { addMenu: [] } }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+  /* All MathJax CHTML output: cap to viewport width and scroll internally if too wide.
+     MathJax v3 emits `display="true"` only for block math; inline math has no `display` attr,
+     so a single `[jax="CHTML"]` selector covers both — no per-screen-size rule needed. */
+  mjx-container[jax="CHTML"] {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  /* Inline math (no display attr): keep on the line. vertical-align:middle works under
+     overflow:auto; baseline does not. */
+  mjx-container[jax="CHTML"]:not([display="true"]) {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  html { font-size: 17px; }
+  @media (max-width: 640px) {
+    html { font-size: 15px; }
+    body { overflow-x: hidden; }
+    .prose-cp { overflow-wrap: anywhere; word-break: break-word; }
+  }
+  body { background: #0b0f17; color: #e2e8f0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+  .card { background: #111827; border: 1px solid #1f2937; }
+  .pill { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; }
+  .pill-cf      { background: #1e3a8a; color: #bfdbfe; }
+  .pill-at      { background: #064e3b; color: #a7f3d0; }
+  .pill-cses    { background: #4c1d95; color: #ddd6fe; }
+  .pill-spoj    { background: #7c2d12; color: #fed7aa; }
+  .pill-kickstart { background: #831843; color: #fbcfe8; }
+  .pill-zibada  { background: #7f1d1d; color: #fecaca; }
+  .pill-other   { background: #374151; color: #d1d5db; }
+  .pill-easier  { background: #14532d; color: #bbf7d0; }
+  .pill-similar { background: #713f12; color: #fed7aa; }
+  .pill-course  { background: #1e3a8a; color: #bfdbfe; }
+  .pill-concept { background: #4c1d95; color: #e9d5ff; }
+  .pill-intro   { background: #4b5563; color: #e5e7eb; }
+  .pill-problem { background: #115e59; color: #99f6e4; }
+
+  /* Shared rich-text: applies to both explanations and hint bodies */
+  .prose-cp        { font-size: 1.02rem; line-height: 1.75; color: #e5e7eb; }
+  .prose-cp p      { margin: 0.85rem 0; }
+  .prose-cp p:first-child { margin-top: 0; }
+  .prose-cp p:last-child  { margin-bottom: 0; }
+  .prose-cp strong { color: #fbbf24; font-weight: 600; }
+  .prose-cp em     { color: #fde68a; }
+  .prose-cp code   { background: #1f2937; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: #f59e0b; font-size: 0.95em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  .prose-cp ul     { list-style: disc; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp ol     { list-style: decimal; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp li     { margin: 0.35rem 0; }
+  .prose-cp pre    { background: #0d1320; border: 1px solid #1f2937; border-radius: 0.5rem; padding: 0.8rem 1rem; margin: 0.85rem 0; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.92rem; line-height: 1.55; color: #e2e8f0; }
+  .prose-cp pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+  .prose-cp br + br { display: none; }
+
+  .progress-bar { background: linear-gradient(90deg, #10b981 var(--p, 0%), #1f2937 var(--p, 0%)); }
+
+  /* Disclosure summaries: shared chevron pattern. Use class="chev" on the indicator span;
+     it rotates 90° when its parent <details> is open. */
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::marker { content: ""; }
+  .chev { display: inline-block; transition: transform 0.15s ease; color: #6b7280; }
+  details[open] > summary .chev { transform: rotate(90deg); }
+</style>
+</head>
+<body class="min-h-screen">
+<nav class="card border-b border-gray-800 px-4 sm:px-6 py-2 sm:py-3 sticky top-0 z-10 backdrop-blur bg-opacity-90">
+  <div class="max-w-6xl mx-auto flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-3 hover:opacity-80">
+      <span class="text-xl font-bold text-amber-300">Notes</span>
+      
+    </a>
+    <div class="flex items-center gap-4 text-sm">
+      <a href="index.html" class="hover:text-amber-300">Lectures</a>
+      
+      <a href="../" class="text-gray-500 hover:text-amber-300">←</a>
+    </div>
+  </div>
+</nav>
+
+
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+  
+
+<div class="mb-4">
+  <a href="index.html" class="text-sm text-gray-400 hover:text-amber-300">← All lectures</a>
+</div>
+
+
+
+<details class="lecture-head mb-6">
+  <summary class="rounded-lg hover:bg-gray-800/30 -mx-2 px-2 py-2">
+    <div class="flex items-start gap-3">
+      <span class="chev mt-2 text-lg leading-none shrink-0">▸</span>
+      <div class="min-w-0 flex-1 flex items-start justify-between gap-4 flex-wrap">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 text-xs text-gray-400 flex-wrap">
+            <span class="pill pill-problem">problem</span>
+            <span>Module 02</span>
+            <span>·</span>
+            <span>Sorting and Searching</span>
+            <span>·</span>
+            <span>54:47</span>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-bold mt-1 break-words">Simple Skewness</h1>
+          <p class="hidden sm:block text-xs text-gray-500 mt-0.5 font-mono break-words">mod02lec08 - Simple Skewness</p>
+        </div>
+        <div class="flex items-center gap-2">
+          
+        </div>
+      </div>
+    </div>
+  </summary>
+
+  <div class="mt-4">
+    <div class="mb-6">
+      <a href="https://www.youtube.com/watch?v=TFnzLh-tNmI"
+         target="_blank" rel="noopener"
+         class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 hover:underline text-sm">
+        ▶ Watch on YouTube ↗
+      </a>
+    </div>
+
+    
+    <section class="card rounded-lg p-4 sm:p-5">
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">Explanation</h2>
+      <div class="prose-cp"><p>Many "find the best subset / pair / triple" problems are too big to brute-force directly, but they crack open once you <strong>fix one parameter</strong> and ask the easier question of how to optimize the rest. Here that pivot is the <strong>median</strong>: instead of searching over all $2^n$ subsets, you say "suppose the median is $a_i$ — given that, what is the best mean I can achieve?" Once that question is fast, you just try every candidate $a_i$.</p>
+
+<p>The other half of the trick is <strong>sorting first</strong>. Sorted arrays turn vague conditions like "values below the median" or "the $k$ biggest" into clean range queries — they are simply prefixes and suffixes. So the recipe is: sort, fix a position $i$ in the sorted array, and use prefix sums (or a heap, or precomputed max-sums) to evaluate the best completion in $O(1)$ or $O(\log n)$.</p>
+
+<p>For Simple Skewness in particular, an odd-size subset of size $2k+1$ with median $m$ must contain exactly $k$ elements $\le m$ and $k$ elements $\ge m$. To make the mean as large as possible without disturbing the median, you greedily pick the $k$ <em>largest</em> values from each side — closest to $m$ from below, farthest from $m$ above. Sorting and a couple of running sums make this evaluation cheap, and you sweep $k$ for every choice of $m$.</p>
+
+<p>Tiny illustration of the pattern on a friendlier task — "pick 3 numbers with the largest sum whose median is fixed". On sorted $a = [1,2,5,7,9]$, if you fix the median as $5$, the best triple is $\{2, 5, 9\}$: take the largest element below $5$ and the largest above. The point isn't this trivial answer; it's that <em>once $5$ is fixed, the remaining choice is forced and instant</em>. Trying each possible median in turn gives the global optimum.</p>
+
+<p>Common beginner pitfalls:</p>
+<ul>
+<li><strong>Forgetting to sort</strong>, or sorting and then using original indices — keep your indexing in one space.</li>
+<li><strong>Off-by-one on the median</strong>: for size $2k+1$ the median is at sorted position $k$ (0-indexed), and there must be exactly $k$ elements on each side, not $k$ vs $k+1$.</li>
+<li><strong>Double-counting the pivot</strong> when summing "below + median + above" — the median itself is one element, not part of either side.</li>
+<li><strong>Re-doing $O(n)$ work inside the loop.</strong> The whole speedup comes from precomputing prefix sums or "best $k$ on each side" tables once, then reusing them per candidate.</li>
+<li><strong>Missing structure in $k$.</strong> For a fixed median, the score as a function of subset half-size $k$ is often <em>unimodal</em> — it rises, peaks, then falls. Recognizing this lets you ternary-search $k$ instead of trying every value, which can be the difference between TLE and AC.</li>
+</ul></div>
+    </section>
+    
+  </div>
+</details>
+
+<!-- Problems -->
+
+<section class="mb-6">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">Problems</h2>
+  <div class="space-y-4">
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-18">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-course">Course</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">2400</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/600/D" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Simple Skewness ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: binary search, math, sortings
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">The lecture title &#39;Simple Skewness&#39; is the exact name of CF 600D, a Codeforces Round 332 Div.2 problem that maximizes (mode − mean) over subarrays using binary search and prefix sums — directly tied to the Sorting and Searching topic.</p>
+      </div>
+      
+
+      
+      <p class="text-xs text-gray-500 mt-3 italic">Course problem — see the video and explanation above. No separate hint ladder.</p>
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-28">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-easier">Easier 1</span>
+        <span class="pill pill-cses">cses</span>
+        
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://cses.fi/problemset/task/1074" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Stick Lengths ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: sorting, median
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Directly builds the intuition that the median minimizes total absolute deviation—the exact property 600/D exploits when it fixes one element as the median and maximizes the surplus sum of the remaining window.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Minimize the sum of absolute deviations — choose a target value $t$ and pay $\sum |p_i - t|$.<br><strong>Twist:</strong> Recognizing that the optimal $t$ is the <strong>median</strong>, not the mean, is the entire problem. The math is textbook once you see it.<br><strong>Builds:</strong> L1 vs L2 optimization intuition — why median beats mean for absolute cost, and why sorting unlocks the answer.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (5 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Try [1, 2, 10] by hand. The mean is ~4.3 — does using 4 as the target actually feel cheapest? Try target = 1, 2, 10 and compare. What do you notice about where the minimum lands relative to the sorted list?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                The total cost is $\sum |p_i - t|$. Imagine sliding $t$ continuously from left to right along the number line. Each unit step <em>right</em> increases cost by +1 for every stick to your left and decreases it by -1 for every stick to your right. What condition tells you the cost has stopped decreasing?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Cost stops falling exactly when the number of sticks to your left equals the number to your right — i.e., at the <strong>median</strong>. This is the classical result: the <strong>median minimizes the sum of absolute deviations</strong> (contrast with the mean, which minimizes the sum of <em>squared</em> deviations). Any movement away from the median moves more sticks 'against' you than 'with' you.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Algorithm: sort the array, set $t = p[n // 2]$, return $\sum |p_i - t|$. For even $n$ any value between the two middle elements is optimal — but since stick lengths are integers, either middle element gives the same total cost. Complexity: $O(n \log n)$ for sorting, $O(n)$ for the sum.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Python code sketch — watch the output size: the answer can reach $2 \times 10^{14}$, but Python integers handle that natively.<br><pre>import sys\ninput = sys.stdin.readline\n\nn = int(input())\np = sorted(map(int, input().split()))\nmedian = p[n // 2]\nprint(sum(abs(x - median) for x in p))</pre>Edge cases: $n=1$ → cost 0 (already done). All equal → median equals every element, sum is 0. No special-casing needed.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-29">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-easier">Easier 2</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1300</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1175/C" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Electrification ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: sorting, two pointers, sliding window
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Practices sort + two-pointer range scan to count elements inside a sliding window—the same primitive 600/D uses when, for a fixed median element, it determines how many original-array positions fall on each side of a candidate window.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Fixed-size sliding window on a sorted array.<br><strong>Twist:</strong> The input is already sorted, and you need to recognize that the $k+1$ nearest points to any $x$ always form a <em>consecutive block</em> — that reframes the whole problem.<br><strong>Builds:</strong> The habit of converting "find optimal point" questions into "find optimal window" questions on sorted sequences.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (5 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                The array is already sorted. Try a small example: $n=4$, $k=1$, points $[1, 3, 8, 10]$. Pick a few candidate values of $x$ and compute which two points are closest to each one. What do you notice about <em>where</em> in the sorted array those two closest points sit?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 1 you may have noticed: for any $x$, the $k+1$ nearest points always form a <strong>consecutive block</strong> in the sorted array. Convince yourself why — if you skip a point, there's always a closer one in between.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 2, the question becomes: for each window of $k+1$ consecutive points $[a_i, a_{i+k}]$, what is the best possible $f_k$ value achievable by placing $x$ optimally inside that window? Express it in terms of $a_i$ and $a_{i+k}$ only.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                The best $x$ for window $[a_i, a_{i+k}]$ is the midpoint, giving $f_k = \lceil (a_{i+k} - a_i) / 2 \rceil$. Since this grows with the window <strong>span</strong>, just slide a fixed-size window of $k+1$ elements, track the minimum span $a_{i+k} - a_i$, and output $(a_i + a_{i+k}) // 2$ for the best window. $O(n)$ per query.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Python sketch — use <code>sys.stdin</code> and <code>'\n'.join</code> for the large $T$:<br><pre>import sys
+input = sys.stdin.readline
+T = int(input())
+out = []
+for _ in range(T):
+    n, k = map(int, input().split())
+    a = list(map(int, input().split()))
+    best_x = (a[0] + a[k]) // 2
+    min_span = a[k] - a[0]
+    for i in range(1, n - k):
+        span = a[i + k] - a[i]
+        if span < min_span:
+            min_span = span
+            best_x = (a[i] + a[i + k]) // 2
+    out.append(str(best_x))
+print('\n'.join(out))</pre>Edge cases: $k=0$ means any $a_i$ works (span 0, distance 0). The problem says multiple answers are fine, so the first valid midpoint is acceptable.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-30">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-similar">Similar 1</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">2000</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/439/D" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Devu and his Brother ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: binary search, greedy, sorting, ternary search
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Same &#39;sort + ternary-search over a threshold&#39; skeleton as 600/D: sort both arrays, ternary-search on the split value t minimizing #{a[i]&gt;t}+#{b[j]&lt;t}—unimodal objective, identical outer structure, without the nested median constraint.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> ternary search on a convex cost function over a continuous threshold variable.<br><strong>Twist:</strong> the threshold x is not given — you must invent it as an auxiliary variable, then recognize that the total cost is a convex (bowl-shaped) function of x. That convexity is the non-obvious unlock.<br><strong>Builds:</strong> spotting convexity in sum-of-costs problems; combining ternary search with prefix-sum + binary-search evaluation for an $O(n \log n + \log V \cdot \log n)$ solution.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (10 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                The condition says min(a) ≥ max(b). Picture the 'finished' state: there exists some level x such that every element of a is at or above x and every element of b is at or below x. You get to choose x freely. Try a few concrete values of x on a small example — does the total cost vary a lot between choices, and does it feel like there is a 'sweet spot'?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 1: for any fixed threshold x, the cost is fully determined. Every a[i] below x must be raised to x (paying x − a[i] per element); every b[j] above x must be lowered to x (paying b[j] − x per element). Write this as $f(x) = \sum_i \max(0,\, x - a_i) + \sum_j \max(0,\, b_j - x)$. This formula works for any integer x, not just values already in the arrays.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Focus on just the first sum: $C_a(x) = \sum_i \max(0, x - a_i)$. What happens to $C_a$ when x increases by 1? Every a[i] that was already below x now costs 1 more operation, and any a[i] equal to x is newly 'below the bar'. So $C_a(x)$ is <strong>non-decreasing</strong> in x — committing to a higher threshold for a never saves you operations on the a side.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                By the same logic, $C_b(x) = \sum_j \max(0, b_j - x)$ is <strong>non-increasing</strong> in x: raising x can only shrink or eliminate gaps between b elements and the bar. You now have $f(x) = C_a(x) + C_b(x)$ — a non-decreasing term plus a non-increasing term. What shape must their sum have as a function of x?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                $f(x)$ is the sum of two convex piecewise-linear functions, so $f$ itself is <strong>convex</strong>: it has a single valley (possibly flat) and no other local minima. A convex function over an integer range can be minimized with <strong>ternary search</strong> in $O(\log V)$ evaluations (V ≈ $10^9$). The remaining question: can you evaluate $f(x)$ for a single x faster than $O(n + m)$?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 6</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                To make each evaluation fast, <strong>sort a ascending</strong> and precompute prefix sums pa[], where pa[k] = a[0] + ... + a[k−1]. For a given x, the elements of a that are strictly below x form a contiguous prefix of the sorted array. Find the prefix length i = bisect_left(a, x) in $O(\log n)$, then $C_a(x) = i \cdot x - \text{pa}[i]$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 7</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Do the same for b: <strong>sort b ascending</strong> and build prefix sums pb[]. Elements of b strictly greater than x form a suffix — find where the suffix starts with j = bisect_right(b, x), also $O(\log n)$. Then $C_b(x) = (\text{pb}[m] - \text{pb}[j]) - (m - j) \cdot x$. Each evaluation of $f(x)$ now costs $O(\log n)$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 8</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Integer ternary search loop: maintain integer bounds lo and hi. Each round compute t1 = lo + (hi−lo)//3 and t2 = hi − (hi−lo)//3; if f(t1) ≤ f(t2) set hi = t2, else set lo = t1. Stop when hi − lo ≤ 2, then brute-check the remaining ≤ 3 candidates. Initial range: lo = 1, hi = max(b) — going above max(b) makes cost_b zero but only inflates cost_a.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 9</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                <strong>Edge case first</strong>: after sorting, if a[0] ≥ b[−1] (i.e., min(a) ≥ max(b)), print 0 and return — the condition is already satisfied. Also: element values reach $10^9$ and arrays reach $10^5$, so sums can hit $10^{14}$ — Python handles this natively. Use sys.stdin.buffer.read() for speed on large inputs.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 10</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Full Python sketch:<br><pre>import sys\nfrom bisect import bisect_left, bisect_right\n\ndef solve():\n    data = sys.stdin.buffer.read().split()\n    n, m = int(data[0]), int(data[1])\n    a = sorted(int(x) for x in data[2:2+n])\n    b = sorted(int(x) for x in data[2+n:2+n+m])\n    if a[0] >= b[-1]:\n        print(0); return\n    pa = [0]*(n+1)\n    for i in range(n): pa[i+1] = pa[i] + a[i]\n    pb = [0]*(m+1)\n    for i in range(m): pb[i+1] = pb[i] + b[i]\n    def cost(x):\n        i = bisect_left(a, x)         # a[0..i-1] are all < x\n        ca = i*x - pa[i]\n        j = bisect_right(b, x)        # b[j..m-1] are all > x\n        cb = (pb[m]-pb[j]) - (m-j)*x\n        return ca + cb\n    lo, hi = 1, b[-1]\n    while hi - lo > 2:\n        t1 = lo + (hi-lo)//3\n        t2 = hi - (hi-lo)//3\n        if cost(t1) <= cost(t2): hi = t2\n        else: lo = t1\n    print(min(cost(x) for x in range(lo, hi+1)))\n\nsolve()</pre>bisect_left gives elements <em>strictly</em> less than x (correct for cost_a); bisect_right gives the first index strictly greater than x (correct for cost_b). The final range(lo, hi+1) checks at most 3 values.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-31">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-similar">Similar 2</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1700</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1082/E" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Increasing Frequency ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: dp, prefix sums, strings
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Applies the &#39;fix a target value, replace every element with +1 or −1, then find max subarray sum&#39; transform—precisely the reduction 600/D uses after fixing the median: each a[i] becomes a[i]−median and a prefix-sum max-scan finds the optimal window.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Maximize an element-frequency count after a uniform-shift-on-segment operation — reduces to <strong>maximum subarray sum</strong> on a derived ±1 array.<br><strong>Twist:</strong> The shift $k$ is completely free (any integer), which means you are really choosing which value $v = c - k$ to "promote" to $c$ inside the chosen segment. Efficiently iterating over all possible $v$ without blowing up to $O(n^2)$ is the crux.<br><strong>Builds:</strong> Reformulating counting differences as prefix-sum differences; running Kadane's state <em>sparsely</em> — only at positions where the value changes — so total work stays $O(n)$ even with many distinct values.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (12 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Take a tiny example — say $a=[5,2,5,5]$, $c=2$. Trace what happens when you pick segment $[1,4]$ and $k=-3$: exactly which original values become $2$? Which elements outside the segment still contribute to the final count? Notice that all elements inside shift by the same $k$ — what is the relationship between $k$ and which original value converts to $c$?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 1: every $a[i]$ inside $[l,r]$ becomes $c$ exactly when $a[i] = c - k$. That fixes one <strong>target value</strong> $v = c - k$ per operation; since $k$ is free, $v$ can be anything. Now write out the total count of $c$ after the operation in terms of $v$, the segment, and the original array — how many $c$s come from <em>outside</em> the segment, and how many from <em>inside</em>?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 2: total $c$-count after $=$ [c's outside] $+$ [v's inside] $=$ $(\text{total\_c} - \text{count}(c \text{ in } [l,r])) + \text{count}(v \text{ in } [l,r])$. Rearranging: answer $= \text{total\_c} + \max_{v,\,[l,r]}[\text{count}(v \text{ in } [l,r]) - \text{count}(c \text{ in } [l,r])]$. The whole problem has collapsed into finding the value $v$ and segment that maximize this <strong>net gain</strong>.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 3: for a fixed $v$, define $b[i] = +1$ if $a[i]=v$, $-1$ if $a[i]=c$, $0$ otherwise. The gain for segment $[l,r]$ is exactly the subarray sum of $b$ over $[l,r]$. You need the <strong>maximum subarray sum</strong> of $b$. You know an $O(n)$ algorithm for this — what is it, and why can't you just run it independently for each value $v$?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 4: that's Kadane's algorithm, $O(n)$ per value. But there can be $O(n)$ distinct values, making the naive approach $O(n^2)$. Key observation: for a fixed $v$, only positions where $a[i]=v$ (contribute $+1$) and $a[i]=c$ (contribute $-1$) are <strong>active</strong> in $b$ — all other positions are zero and the running sum is flat there. How can you exploit this to avoid scanning all $n$ elements for each $v$?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 6</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 5: precompute $\text{prefix\_c}[i] = \#\{j < i : a[j] = c\}$ once in $O(n)$. For value $v$, the Kadane prefix at index $i$ is $h_v(i) = \text{prefix\_v}(i) - \text{prefix\_c}(i)$. The maximum subarray sum of $b$ equals $\max_{l \le r}[h_v(r) - h_v(l)]$ — the classic <strong>best buy/sell profit</strong> on a sequence. Now ask: at which indices can $h_v(i)$ actually <em>increase</em>?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 7</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 6: $h_v(i)$ increases by 1 only when $a[i-1] = v$, and decreases by 1 only when $a[i-1] = c$. Between two consecutive $v$-positions, $h_v$ is <strong>non-increasing</strong> (only $c$s can change it, pulling it down). Therefore the minimum of $h_v$ over any inter-$v$ gap is found at the <em>right end</em> of that gap — right before the next $v$ arrives.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 8</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 7: let the occurrences of $v$ be at 0-indexed positions $p_1 < p_2 < \cdots < p_k$. At the $j$-th occurrence: $h_v(p_j) = (j{-}1) - \text{prefix\_c}[p_j]$ (just before processing it) and $h_v(p_j{+}1) = j - \text{prefix\_c}[p_j]$ (just after, since $a[p_j]=v\ne c$). The minimum of $h_v$ over all indices $0 \ldots p_j{+}1$ equals $\min\bigl(0,\, h_v(p_1),\, \ldots,\, h_v(p_j)\bigr)$ — updatable with a single <strong>running minimum</strong> variable.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 9</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 8: the best gain for value $v$ is $\max_j \bigl[h_v(p_j{+}1) - \text{running\_min up to }\,p_j\bigr]$. Processing the $k$ positions of $v$ costs $O(k)$. Since every element belongs to exactly one value group, $\sum_v \text{count}(v) = n$, so the <strong>total work across all values is $O(n)$</strong> — not $O(n \times |\text{distinct values}|)$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 10</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Full algorithm: (1) Build $\text{prefix\_c}$ in $O(n)$. (2) Group each non-$c$ element's index by its value. (3) For each group, scan positions $p_1, p_2, \ldots$ in order: maintain $\text{running\_min}$ starting at $0$; at the $j$-th position $p$, update $\text{running\_min} = \min(\text{running\_min},\, (j{-}1) - \text{prefix\_c}[p])$, then record candidate gain $(j - \text{prefix\_c}[p]) - \text{running\_min}$. (4) Answer $= \text{total\_c} + \text{best\_gain}$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 11</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Edge cases: skip $v = c$ entirely (gain is always 0). If $\text{best\_gain}$ stays $0$, the answer is just $\text{total\_c}$ — the best move is a no-op. For $n=1$: whether $a[0]=c$ or not, you can always achieve count $1$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 12</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Code sketch (Python):<br><pre>import sys
+from collections import defaultdict
+
+def solve():
+    data = sys.stdin.buffer.read().split()
+    n, c = int(data[0]), int(data[1])
+    a = [int(x) for x in data[2:n+2]]
+
+    prefix_c = [0] * (n + 1)
+    for i in range(n):
+        prefix_c[i+1] = prefix_c[i] + (1 if a[i] == c else 0)
+    total_c = prefix_c[n]
+
+    groups = defaultdict(list)
+    for i, x in enumerate(a):
+        if x != c:
+            groups[x].append(i)
+
+    best_gain = 0
+    for pos_list in groups.values():
+        running_min = 0
+        for j, p in enumerate(pos_list, 1):
+            h_before = (j - 1) - prefix_c[p]
+            running_min = min(running_min, h_before)
+            best_gain = max(best_gain, j - prefix_c[p] - running_min)
+
+    print(total_c + best_gain)
+
+solve()</pre>Use <strong>sys.stdin.buffer.read()</strong> for speed with $n = 5 \times 10^5$. <code>enumerate(pos_list, 1)</code> gives 1-indexed $j$. Note <code>j - prefix_c[p]</code> is $h_{\text{after}}$ because $a[p]=v\ne c$ so $\text{prefix\_c}[p{+}1]=\text{prefix\_c}[p]$.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+  </div>
+</section>
+
+
+<button id="to-top"
+        aria-label="Back to top"
+        class="fixed bottom-4 right-4 z-20 hidden bg-gray-800/90 hover:bg-gray-700 border border-gray-700
+               text-amber-300 w-11 h-11 rounded-full shadow-lg backdrop-blur text-lg leading-none">↑</button>
+<script>
+  (function(){
+    const btn = document.getElementById('to-top');
+    if (!btn) return;
+    let hidden = true;
+    const onScroll = () => {
+      const shouldHide = window.scrollY < 600;
+      if (shouldHide === hidden) return;
+      btn.classList.toggle('hidden', shouldHide);
+      hidden = shouldHide;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    onScroll();
+  })();
+</script>
+
+
+
+</main>
+
+
+
+</body>
+</html>

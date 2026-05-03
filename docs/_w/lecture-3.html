@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reversort</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { darkMode: 'class' };
+</script>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+    chtml: { displayAlign: 'left' },
+    options: { renderActions: { addMenu: [] } }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+  /* All MathJax CHTML output: cap to viewport width and scroll internally if too wide.
+     MathJax v3 emits `display="true"` only for block math; inline math has no `display` attr,
+     so a single `[jax="CHTML"]` selector covers both — no per-screen-size rule needed. */
+  mjx-container[jax="CHTML"] {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  /* Inline math (no display attr): keep on the line. vertical-align:middle works under
+     overflow:auto; baseline does not. */
+  mjx-container[jax="CHTML"]:not([display="true"]) {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  html { font-size: 17px; }
+  @media (max-width: 640px) {
+    html { font-size: 15px; }
+    body { overflow-x: hidden; }
+    .prose-cp { overflow-wrap: anywhere; word-break: break-word; }
+  }
+  body { background: #0b0f17; color: #e2e8f0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+  .card { background: #111827; border: 1px solid #1f2937; }
+  .pill { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; }
+  .pill-cf      { background: #1e3a8a; color: #bfdbfe; }
+  .pill-at      { background: #064e3b; color: #a7f3d0; }
+  .pill-cses    { background: #4c1d95; color: #ddd6fe; }
+  .pill-spoj    { background: #7c2d12; color: #fed7aa; }
+  .pill-kickstart { background: #831843; color: #fbcfe8; }
+  .pill-zibada  { background: #7f1d1d; color: #fecaca; }
+  .pill-other   { background: #374151; color: #d1d5db; }
+  .pill-easier  { background: #14532d; color: #bbf7d0; }
+  .pill-similar { background: #713f12; color: #fed7aa; }
+  .pill-course  { background: #1e3a8a; color: #bfdbfe; }
+  .pill-concept { background: #4c1d95; color: #e9d5ff; }
+  .pill-intro   { background: #4b5563; color: #e5e7eb; }
+  .pill-problem { background: #115e59; color: #99f6e4; }
+
+  /* Shared rich-text: applies to both explanations and hint bodies */
+  .prose-cp        { font-size: 1.02rem; line-height: 1.75; color: #e5e7eb; }
+  .prose-cp p      { margin: 0.85rem 0; }
+  .prose-cp p:first-child { margin-top: 0; }
+  .prose-cp p:last-child  { margin-bottom: 0; }
+  .prose-cp strong { color: #fbbf24; font-weight: 600; }
+  .prose-cp em     { color: #fde68a; }
+  .prose-cp code   { background: #1f2937; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: #f59e0b; font-size: 0.95em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  .prose-cp ul     { list-style: disc; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp ol     { list-style: decimal; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp li     { margin: 0.35rem 0; }
+  .prose-cp pre    { background: #0d1320; border: 1px solid #1f2937; border-radius: 0.5rem; padding: 0.8rem 1rem; margin: 0.85rem 0; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.92rem; line-height: 1.55; color: #e2e8f0; }
+  .prose-cp pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+  .prose-cp br + br { display: none; }
+
+  .progress-bar { background: linear-gradient(90deg, #10b981 var(--p, 0%), #1f2937 var(--p, 0%)); }
+
+  /* Disclosure summaries: shared chevron pattern. Use class="chev" on the indicator span;
+     it rotates 90° when its parent <details> is open. */
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::marker { content: ""; }
+  .chev { display: inline-block; transition: transform 0.15s ease; color: #6b7280; }
+  details[open] > summary .chev { transform: rotate(90deg); }
+</style>
+</head>
+<body class="min-h-screen">
+<nav class="card border-b border-gray-800 px-4 sm:px-6 py-2 sm:py-3 sticky top-0 z-10 backdrop-blur bg-opacity-90">
+  <div class="max-w-6xl mx-auto flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-3 hover:opacity-80">
+      <span class="text-xl font-bold text-amber-300">Notes</span>
+      
+    </a>
+    <div class="flex items-center gap-4 text-sm">
+      <a href="index.html" class="hover:text-amber-300">Lectures</a>
+      
+      <a href="../" class="text-gray-500 hover:text-amber-300">←</a>
+    </div>
+  </div>
+</nav>
+
+
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+  
+
+<div class="mb-4">
+  <a href="index.html" class="text-sm text-gray-400 hover:text-amber-300">← All lectures</a>
+</div>
+
+
+
+<details class="lecture-head mb-6">
+  <summary class="rounded-lg hover:bg-gray-800/30 -mx-2 px-2 py-2">
+    <div class="flex items-start gap-3">
+      <span class="chev mt-2 text-lg leading-none shrink-0">▸</span>
+      <div class="min-w-0 flex-1 flex items-start justify-between gap-4 flex-wrap">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 text-xs text-gray-400 flex-wrap">
+            <span class="pill pill-problem">problem</span>
+            <span>Module 01</span>
+            <span>·</span>
+            <span>Sorting and Searching</span>
+            <span>·</span>
+            <span>39:01</span>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-bold mt-1 break-words">Reversort</h1>
+          <p class="hidden sm:block text-xs text-gray-500 mt-0.5 font-mono break-words">mod01lec01 - Reversort</p>
+        </div>
+        <div class="flex items-center gap-2">
+          
+        </div>
+      </div>
+    </div>
+  </summary>
+
+  <div class="mt-4">
+    <div class="mb-6">
+      <a href="https://www.youtube.com/watch?v=DPeHFXJK95w"
+         target="_blank" rel="noopener"
+         class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 hover:underline text-sm">
+        ▶ Watch on YouTube ↗
+      </a>
+    </div>
+
+    
+    <section class="card rounded-lg p-4 sm:p-5">
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">Explanation</h2>
+      <div class="prose-cp"><p>Reversort is a concrete sorting algorithm you're asked to analyze — not optimize, just understand deeply. The key skill here is <strong>reading an algorithm's pseudocode and reasoning about its invariants</strong>: what's true before each step, what changes, and how to measure some quantity (here, <em>cost</em>) as the algorithm runs. This kind of "simulate and count" thinking comes up constantly in competitive programming.</p>
+
+<p>The mechanism is simple: the algorithm loops over positions $i = 1, 2, \ldots, n-1$. In each iteration it finds the minimum element in the suffix $A[i \ldots n]$, then reverses the subarray from $A[i]$ up to and including that minimum. The reversal length is $(j - i + 1)$ where $j$ is the minimum's current index, and that's the cost for this step. After the reversal, the minimum lands at position $i$ and is frozen — exactly like selection sort, but with a reversal instead of a swap.</p>
+
+<p>Tiny example: array <code>[3, 1, 2]</code>. Step $i=1$: minimum of <code>[3,1,2]</code> is $1$ at index 2, reverse <code>[3,1]</code> → <code>[1,3,2]</code>, cost $2$. Step $i=2$: minimum of <code>[3,2]</code> is $2$ at index 3, reverse <code>[3,2]</code> → <code>[2,3]</code>, cost $2$. Total cost $= 4$. The sorted result is <code>[1,2,3]</code>.</p>
+
+<p>The deeper insight the problem builds toward is about <strong>the range of possible costs</strong>. At step $i$, the reversal length is at least $1$ (minimum is already in place) and at most $n - i + 1$ (minimum is at the very end). So total cost has a hard lower bound of $n - 1$ (one unit per step) and a hard upper bound of $\sum_{i=1}^{n-1}(n - i + 1) = 2 + 3 + \cdots + n = \frac{n(n+1)}{2} - 1$. Any cost strictly between those bounds can be achieved by "spending" exactly one extra unit in some steps — this is the constructive argument the problem asks you to formalize.</p>
+
+<p>Common beginner pitfalls:</p>
+<ul>
+  <li><strong>Off-by-one on the loop bound.</strong> The loop runs to $n-1$, not $n$ — the last element is already in place after the $n-1$st step. Iterating to $n$ either crashes or double-counts cost.</li>
+  <li><strong>Confusing reversal length with reversal count.</strong> Cost is the <em>length</em> of each reversal, not the number of reversals. A length-1 reversal (element already in place) still costs 1, not 0.</li>
+  <li><strong>Forgetting indices shift after each reversal.</strong> When you reverse in place, elements move. If you're simulating, always re-scan the array from position $i$ each step — don't cache the minimum's position from before the previous reversal.</li>
+  <li><strong>Greedy construction going negative.</strong> When constructing a permutation for target cost $C$, you distribute the "extra" cost $C - (n-1)$ across steps greedily from left to right. If you overshoot and try to assign more extra than a step allows, you'll get a negative remainder — check the feasibility bounds first.</li>
+</ul></div>
+    </section>
+    
+  </div>
+</details>
+
+<!-- Problems -->
+
+<section class="mb-6">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">Problems</h2>
+  <div class="space-y-4">
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-1">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      bg-gray-700/60 hover:bg-gray-700/80">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-course">Course</span>
+        <span class="pill pill-zibada">zibada</span>
+        
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://zibada.guru/gcj/2021qr/problems/#A" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Reversort ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: sorting, simulation, implementation
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">The lecture title &#39;Reversort&#39; is the exact name of Google Code Jam 2021 Qualification Round Problem A, which introduces the Reversort sorting algorithm used throughout the module.</p>
+      </div>
+      
+
+      
+      <p class="text-xs text-gray-500 mt-3 italic">Course problem — see the video and explanation above. No separate hint ladder.</p>
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-2">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      bg-gray-700/60 hover:bg-gray-700/80">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-easier">Easier 1</span>
+        <span class="pill pill-cses">cses</span>
+        
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://cses.fi/problemset/task/1084" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Apartments ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: greedy, sorting, two pointers
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Drills Reversort&#39;s core inner-loop sub-skill in isolation: scan a sorted sequence and greedily match each element to its minimum qualifying partner — same left-to-right minimum-finding loop, without the reversal-cost bookkeeping.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Two-pointer scan on two sorted arrays — a matching problem between two sequences with a tolerance window.<br><strong>Twist:</strong> Textbook application; the only subtlety is identifying the correct pointer-advance rule at each step and arguing why a greedy left-to-right match is optimal.<br><strong>Builds:</strong> The foundational greedy instinct: "assign the cheapest available resource that satisfies the current demand" — a pattern that recurs in interval scheduling, job assignment, and bipartite matching approximations.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (4 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Sort both lists on paper and try the example by hand. Notice: if applicant $a_i$ cannot be satisfied by the <strong>smallest</strong> remaining apartment, can any applicant with a <em>smaller</em> desired size be satisfied by it? Think carefully about what that implies for the order in which you should attempt matches.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Once both arrays are sorted ascending, for applicant $a_i$ the acceptable apartment range is $[a_i - k,\ a_i + k]$. If the current smallest unexamined apartment $b_j$ falls <strong>below</strong> $a_i - k$, it is forever useless — no current or future applicant (all with larger desires) can ever be satisfied by it. What should happen to $b_j$?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                This is a <strong>greedy two-pointer</strong>: pointers $i$ over sorted applicants, $j$ over sorted apartments. Three cases each step: if $b_j < a_i - k$ advance $j$ (apartment too small for everyone); if $b_j \le a_i + k$ match and advance both (valid fit); otherwise $b_j > a_i + k$ and the apartment is too large for $a_i$ — advance only $i$ (no apartment further right will be smaller). Count matches.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Full algorithm: sort $a$ and $b$ in $O((n+m)\log(n+m))$, then a single $O(n+m)$ two-pointer pass. Always use <code>sys.stdin</code> for large inputs.
+<pre>import sys
+input = sys.stdin.readline
+n, m, k = map(int, input().split())
+a = sorted(map(int, input().split()))
+b = sorted(map(int, input().split()))
+i = j = ans = 0
+while i < n and j < m:
+    if b[j] < a[i] - k:
+        j += 1
+    elif b[j] <= a[i] + k:
+        ans += 1; i += 1; j += 1
+    else:
+        i += 1
+print(ans)</pre>
+Edge cases: $k=0$ (exact match only) works naturally; $k=10^9$ makes nearly everything valid — no special handling needed either way.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-3">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      bg-gray-700/60 hover:bg-gray-700/80">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-easier">Easier 2</span>
+        <span class="pill pill-cses">cses</span>
+        
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://cses.fi/problemset/task/1091" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Concert Tickets ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: greedy, sorting, binary search, ordered set
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Upgrades the sorted-scan to an explicit &#39;find and consume the largest ticket ≤ budget&#39; problem using a multiset — the same &#39;locate minimum in remaining set and remove it&#39; operation Reversort performs at each step, now requiring O(log n) per query with a data structure.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Dynamic ordered-multiset with floor (predecessor) queries — each query asks for the largest <em>remaining</em> element ≤ a threshold, then removes it.<br><strong>Twist:</strong> Tickets are consumed one-by-one in arrival order, so the pool shrinks after every served customer; static binary search on a fixed array is not enough.<br><strong>Builds:</strong> Recognising when a problem needs a <em>mutable</em> sorted structure (Python <code>SortedList</code> / C++ <code>multiset</code>) instead of a plain sorted array.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (4 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                For each customer you want the <strong>best available ticket</strong> — the one priced as high as possible without exceeding their budget. Work through the example by hand with the tickets sorted: <code>[3 5 5 7 8]</code>, customers <code>4 8 3</code>. Which ticket "belongs" to each customer, and does the arrival order matter for correctness?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                With tickets sorted, each customer's query is: <em>find the largest value in the current pool that is ≤ t.</em> This is a classical <strong>floor (predecessor) query</strong>. The complication is that the pool shrinks — a sold ticket can never be reused — so you can't just binary-search a fixed array.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                You need a structure supporting two operations in $O(\log n)$: (1) <strong>floor query</strong> — largest element ≤ t, and (2) <strong>delete</strong> that element. Python's <code>SortedList</code> from <code>sortedcontainers</code> does both, giving $O((n+m)\log n)$ overall. Use <code>bisect_right(t) - 1</code> to locate the floor index.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Full sketch: <code>from sortedcontainers import SortedList; sl = SortedList(tickets)</code>. For each budget <code>t</code>: <code>i = sl.bisect_right(t) - 1</code>; if <code>i &lt; 0</code> append <code>-1</code>, else append <code>sl[i]</code> and call <code>sl.pop(i)</code>. Read input with <code>sys.stdin</code> and output with <code>sys.stdout.write('\n'.join(map(str, ans)))</code> — a plain <code>print</code> inside a loop TLEs at $n = 2 \times 10^5$.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-4">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-similar">Similar 1</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1600</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1375/D" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Replace by MEX ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: greedy, implementation
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Sort a permutation using a two-operation greedy strategy (insert MEX at index 0, or swap a[0] with a[MEX]) — pushes Reversort&#39;s &#39;greedy-choose-next-operation-to-advance-sort&#39; intuition into a harder setting requiring case analysis on which operation progresses the algorithm at each step.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Greedy simulation — use the MEX operation itself as a placement tool, targeting the "home" array [0, 1, 2, …, n−1].<br><strong>Twist:</strong> The operation is self-referential: replacing with MEX changes the MEX, so you must argue that progress is monotone and bounded within 2n steps — not obvious until you find the right invariant.<br><strong>Builds:</strong> Recognizing when a greedy "fix the cheapest thing now" strategy never backtracks, and counting operations via a pairing argument rather than brute-force bounds.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (11 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Simulate the operation by hand on a small array (say $n=4$). What final state do you keep landing on? Is there one particular sorted array that seems to be the <strong>natural destination</strong> of all these replacements?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 1: every value is between 0 and $n$, so the tightest non-decreasing target is $[0, 1, 2, \ldots, n{-}1]$. Notice that in this target, <strong>value $i$ lives at index $i$</strong>. So ask: when can a single operation send some value directly to its home index?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                If the current MEX is $m < n$, that means $m$ is absent from the array while $0, 1, \ldots, m{-}1$ are all present. In the target $[0, 1, \ldots, n{-}1]$, where does $m$ belong?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Since $m$ is missing and belongs at index $m$, replacing $a[m]$ with MEX (which equals $m$) puts $m$ exactly in its correct slot. Now ask: once $a[m] = m$, can this position ever go wrong again in a future operation?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                MEX can only equal $m$ again if $m$ is <strong>absent</strong> from the array. But $a[m] = m$ keeps $m$ permanently present. Since we only ever overwrite $a[\text{MEX}]$ and MEX can never be $m$ again, position $m$ is <strong>frozen forever</strong>. Each "MEX $< n$" step fixes exactly one position and that fix is irreversible.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 6</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                So the MEX $< n$ case is clean: greedily fix position MEX each time. But what if MEX $= n$? MEX $= n$ means $0, 1, \ldots, n{-}1$ are <strong>all present</strong>. The array has $n$ elements and all $n$ values $\{0,\ldots,n{-}1\}$ appear — by pigeonhole it's a <strong>permutation</strong> of $\{0,\ldots,n{-}1\}$. What's still possibly wrong?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 7</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                A permutation can be unsorted (e.g., $[1, 0, 2]$). You can only place $n$ (the current MEX) somewhere. If you write $n$ over $a[i]$ (where $a[i]$ was some value $v$), then $v$ is now <strong>evicted</strong> from the array. What is the new MEX immediately after this?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 8</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                After evicting $v$ from position $i$, the value $v$ is now missing, so the new MEX $= v < n$. You're back in the easy case — and in the very next step you can <strong>place $v$ at index $v$</strong>, permanently fixing that position.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 9</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                So "MEX $= n$" steps always travel in <strong>pairs</strong> with a following "MEX $< n$" fix step. Count: at most $n$ positions to permanently fix (each needs at most 1 fix step), each possibly preceded by one "MEX $= n$" step → at most $2n$ total operations. When MEX $= n$, <strong>which position</strong> should you displace? Any wrong position works; the simplest is the first $i$ where $a[i] \neq i$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 10</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Full algorithm: loop up to $2n$ times. Each iteration: (1) if the array is already sorted, stop. (2) Compute MEX. (3) If MEX $< n$: write $a[\text{MEX}] = \text{MEX}$, record 1-indexed operation MEX $+ 1$. (4) If MEX $= n$: find the <strong>first</strong> $i$ with $a[i] \neq i$, write $a[i] = n$, record operation $i + 1$. The loop always terminates before $2n$ steps.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 11</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Code sketch (Python):<br><pre>import sys
+input = sys.stdin.readline
+
+def solve():
+    n = int(input())
+    a = list(map(int, input().split()))
+    ops = []
+    for _ in range(2 * n):
+        if a == sorted(a): break
+        present = set(a)
+        mex = 0
+        while mex in present: mex += 1
+        if mex &lt; n:
+            ops.append(mex + 1)
+            a[mex] = mex
+        else:
+            for i in range(n):
+                if a[i] != i:
+                    ops.append(i + 1)
+                    a[i] = n
+                    break
+    print(len(ops))
+    print(*ops)
+
+t = int(input())
+for _ in range(t): solve()</pre>Edge cases: if <code>ops</code> is empty, <code>print(*ops)</code> prints a blank line — that's valid. <code>a == sorted(a)</code> is $O(n \log n)$ inside a $2n$ loop but fine for $n \leq 1000$. For tight I/O use <code>sys.stdout.write</code> and <code>'\n'.join(...)</code> when scaling.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-5">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-similar">Similar 2</span>
+        <span class="pill pill-cses">cses</span>
+        
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://cses.fi/problemset/task/1076" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Sliding Window Median ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: sorting, data structures, sliding window, ordered set, heap
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Instead of sorting once, maintain sorted order dynamically as a window slides through the input. Shares Reversort&#39;s &#39;track relative order across successive steps&#39; skill but adds the twist that elements continuously enter and leave, requiring an ordered data structure rather than a single forward pass.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Sliding window over a dynamically maintained sorted multiset — an order-statistic tree query (rank access) repeated $n$ times.<br><strong>Twist:</strong> You need insert, delete-by-value, and rank-based access all in $O(\log k)$ simultaneously — a plain heap only exposes the extreme element and cannot reach arbitrary ranks.<br><strong>Builds:</strong> Recognising when a problem needs richer ordered-structure capabilities than a heap provides, and reaching for Python's <strong>SortedList</strong> (or two-heap lazy deletion) as the right tool.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (13 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                As the window slides one position to the right, three things must happen to the collection of $k$ elements. Think carefully about what those three operations are — and before reaching for any data structure, ask: which of the three is a plain sorted array or a heap fundamentally bad at?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                The three operations are: (1) <strong>insert</strong> the new right element, (2) <strong>delete</strong> the element that fell off the left, and (3) <strong>read the element at a specific rank</strong> in sorted order. All three happen $n - k + 1$ times. Operations 1 and 3 are easy on different structures — the hard constraint is that all three must be fast <em>simultaneously</em>.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                A sorted array makes rank-access trivial (just index in), but deletion by value requires shifting — $O(k)$ per step, so $O(nk)$ total. With $n, k \le 2 \times 10^5$ that is $4 \times 10^{10}$ — far too slow. So the real bottleneck is: can we delete a specific value from a sorted collection in better than $O(k)$?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                A min-heap or max-heap can insert and delete-min in $O(\log k)$, but it can only expose the <em>extreme</em> element — it has no way to answer 'what is the element at rank $\lfloor(k-1)/2\rfloor$?' What structure supports insert, delete-by-value, <em>and</em> rank-based index access, all in $O(\log k)$?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                That structure is a <strong>balanced BST augmented with subtree sizes</strong> — also called an order-statistic tree. In Python, <code>SortedList</code> from the <code>sortedcontainers</code> library is exactly this: <code>sl.add(x)</code>, <code>sl.remove(x)</code>, and <code>sl[i]</code> (rank lookup) are all $O(\log k)$. This is the right tool.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 6</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 5 we have the structure — now wire up the window. For each index $i$, call <code>sl.add(a[i])</code>. Once $i \ge k$, also call <code>sl.remove(a[i - k])</code> to evict the element that left the window. After both operations, <code>sl</code> always holds exactly the current $k$ elements in sorted order.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 7</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Which index into the sorted list is the median? For $k$ elements (0-indexed 0 to $k-1$), the problem says for even $k$ take the <em>smaller</em> of the two middles. That is always index $\lfloor(k-1)/2\rfloor$. Check: $k=3 \Rightarrow$ index 1 (true middle); $k=4 \Rightarrow$ index 1 (smaller of the two middles). Verify with the first example window $[2,4,3] \to$ sorted $[2,3,4]$: index 1 = <strong>3</strong>. ✓
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 8</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                What about <strong>duplicate values</strong>? <code>SortedList</code> stores every insertion separately — it is a sorted multiset, not a set. So <code>sl.remove(x)</code> removes exactly one copy of $x$, which is correct behaviour. Duplicates require no special handling; the invariant is maintained automatically.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 9</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Build the window incrementally rather than pre-filling: start with an empty <code>SortedList</code>, add one element per iteration, and output only once <code>len(sl) == k</code> (equivalently, once $i \ge k-1$). This sidesteps off-by-one errors and handles the edge cases $k=1$ and $k=n$ uniformly.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 10</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                <code>sortedcontainers</code> is available on CSES and most competitive programming judges but is <strong>not</strong> in the Python standard library — you must write <code>from sortedcontainers import SortedList</code> explicitly. If a judge lacks it, the fallback is two heaps with lazy deletion (described in the next hint).
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 11</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Two-heap lazy deletion (worth knowing for restricted judges): keep a max-heap <code>lo</code> for the lower half and a min-heap <code>hi</code> for the upper half. Mark departing elements in a deletion counter; clean them lazily when they surface at a heap top. Rebalance sizes to $\lfloor k/2 \rfloor$ and $\lceil k/2 \rceil$ after each insert/evict. Same $O(n \log k)$ complexity but roughly 3× more code — <code>SortedList</code> is the cleaner path when available.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 12</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Time complexity: $O(n \log k)$ — each of the $n$ iterations does one <code>add</code>, one <code>remove</code>, and one index lookup, each costing $O(\log k)$. Space: $O(k)$ for the window. This comfortably fits within the $2 \times 10^5$ constraint.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 13</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Code sketch (Python, <code>SortedList</code> path):<br><pre>import sys
+from sortedcontainers import SortedList
+
+def main():
+    data = sys.stdin.read().split()
+    n, k = int(data[0]), int(data[1])
+    a = list(map(int, data[2:]))
+    sl = SortedList()
+    med = (k - 1) // 2
+    out = []
+    for i in range(n):
+        sl.add(a[i])
+        if i >= k:
+            sl.remove(a[i - k])
+        if i >= k - 1:
+            out.append(str(sl[med]))
+    print(' '.join(out))
+
+main()</pre>Use <code>sys.stdin.read()</code> for fast input. Accumulate results in a list and <code>' '.join</code> at the end — repeated <code>print</code> calls inside a loop are slow. Edge case $k=1$: <code>sl[0]</code> every step = the element itself. ✓
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+  </div>
+</section>
+
+
+<button id="to-top"
+        aria-label="Back to top"
+        class="fixed bottom-4 right-4 z-20 hidden bg-gray-800/90 hover:bg-gray-700 border border-gray-700
+               text-amber-300 w-11 h-11 rounded-full shadow-lg backdrop-blur text-lg leading-none">↑</button>
+<script>
+  (function(){
+    const btn = document.getElementById('to-top');
+    if (!btn) return;
+    let hidden = true;
+    const onScroll = () => {
+      const shouldHide = window.scrollY < 600;
+      if (shouldHide === hidden) return;
+      btn.classList.toggle('hidden', shouldHide);
+      hidden = shouldHide;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    onScroll();
+  })();
+</script>
+
+
+
+</main>
+
+
+
+</body>
+</html>

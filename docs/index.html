@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Hackathon Board</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+      animation: { 'fade-in': 'fadeIn 0.2s ease-in-out' },
+      keyframes: { fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } } }
+    }
+  }
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html { font-size: 17.5px; }
+  body { font-family: 'Inter', system-ui, sans-serif; }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: #030712; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #374151; }
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+  details[open] > summary .chev { transform: rotate(90deg); }
+  .chev { transition: transform 0.15s; }
+
+  /* Tooltip — hover any [data-tip] element to reveal a dark-theme tooltip above it */
+  [data-tip] { position: relative; }
+  [data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: #0b1220;
+    border: 1px solid #374151;
+    color: #e5e7eb;
+    font-size: 11px;
+    line-height: 1.4;
+    padding: 6px 9px;
+    border-radius: 6px;
+    white-space: normal;
+    width: max-content;
+    max-width: 240px;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 50;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  }
+  [data-tip]::before {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    border: 5px solid transparent;
+    border-top-color: #374151;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 50;
+  }
+  [data-tip]:hover::after,
+  [data-tip]:focus-visible::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  [data-tip]:hover::before,
+  [data-tip]:focus-visible::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  /* Help icon visual */
+  .help-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    font-size: 10px;
+    border-radius: 50%;
+    background: #1f2937;
+    color: #9ca3af;
+    border: 1px solid #374151;
+    cursor: help;
+    user-select: none;
+  }
+  .help-dot:hover { color: #e5e7eb; border-color: #4b5563; }
+</style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+
+<div class="flex">
+
+  <!-- SIDEBAR -->
+  <aside class="w-72 bg-gray-900 border-r border-gray-800 h-screen sticky top-0 overflow-y-auto scrollbar-thin p-6 shrink-0">
+    <div class="mb-6">
+      <h1 class="text-xl font-bold text-white">AI Hackathon Board</h1>
+      <p class="text-xs text-gray-400 mt-1">Remote · Korea-local · Gov-hosted</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="mb-6 grid grid-cols-3 gap-2 text-center">
+      <div class="bg-gray-800/60 rounded-lg p-2" data-tip="All hackathons currently tracked.">
+        <div id="stat-total" class="text-lg font-bold text-white">0</div>
+        <div class="text-[10px] text-gray-400 uppercase tracking-wide">Total</div>
+      </div>
+      <div class="bg-emerald-900/30 rounded-lg p-2 border border-emerald-800/40" data-tip="Events you marked ★ Shortlist. Use Status filter below to see only these.">
+        <div id="stat-interested" class="text-lg font-bold text-emerald-400">0</div>
+        <div class="text-[10px] text-emerald-300/80 uppercase tracking-wide">Pick</div>
+      </div>
+      <div class="bg-amber-900/30 rounded-lg p-2 border border-amber-800/40" data-tip="Events you marked ✓ Applied — i.e. registered or submitted.">
+        <div id="stat-applied" class="text-lg font-bold text-amber-400">0</div>
+        <div class="text-[10px] text-amber-300/80 uppercase tracking-wide">Applied</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="space-y-5">
+      <div>
+        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Tier</div>
+        <div class="space-y-1.5">
+          <label class="flex items-center gap-2 text-sm cursor-pointer hover:text-white transition">
+            <input type="checkbox" class="filter-tier accent-emerald-500" value="1" checked>
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Gov-hosted (Korea)
+          </label>
+          <label class="flex items-center gap-2 text-sm cursor-pointer hover:text-white transition">
+            <input type="checkbox" class="filter-tier accent-indigo-500" value="2" checked>
+            <span class="w-2 h-2 rounded-full bg-indigo-500"></span> Global remote
+          </label>
+          <label class="flex items-center gap-2 text-sm cursor-pointer hover:text-white transition">
+            <input type="checkbox" class="filter-tier accent-amber-500" value="3" checked>
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span> Korea-local
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Access</div>
+        <div class="space-y-1.5">
+          <label class="flex items-center gap-2 text-sm cursor-pointer hover:text-white transition">
+            <input type="checkbox" id="filter-remote" class="accent-emerald-500">
+            Remote-friendly only
+          </label>
+          <label class="flex items-center gap-2 text-sm cursor-pointer hover:text-white transition">
+            <input type="checkbox" id="filter-gov" class="accent-emerald-500">
+            Government-backed only
+          </label>
+          <label class="flex items-center gap-2 text-sm cursor-pointer hover:text-white transition">
+            <input type="checkbox" id="filter-open" class="accent-emerald-500">
+            Currently open / upcoming
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Status</div>
+        <div class="space-y-1.5">
+          <label class="flex items-center gap-2 text-sm cursor-pointer hover:text-white transition" data-tip="Everything except items you've marked Passed.">
+            <input type="radio" name="status-filter" value="all" checked class="accent-gray-400">
+            All <span class="text-[10px] text-gray-500">(hides passed)</span>
+          </label>
+          <label class="flex items-center gap-2 text-sm cursor-pointer hover:text-white transition">
+            <input type="radio" name="status-filter" value="pick" class="accent-emerald-500">
+            Shortlisted
+          </label>
+          <label class="flex items-center gap-2 text-sm cursor-pointer hover:text-white transition">
+            <input type="radio" name="status-filter" value="applied" class="accent-amber-500">
+            Applied
+          </label>
+          <label class="flex items-center gap-2 text-sm cursor-pointer hover:text-white transition">
+            <input type="radio" name="status-filter" value="pass" class="accent-rose-500">
+            Passed
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Sort</div>
+        <select id="sort-select" class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-gray-200 focus:outline-none focus:border-emerald-600">
+          <option value="tier">Tier (recommended)</option>
+          <option value="deadline">Deadline soonest</option>
+          <option value="name">Name A–Z</option>
+        </select>
+      </div>
+
+      <button id="reset-filters" class="w-full text-xs text-gray-400 hover:text-white py-2 border border-gray-800 rounded hover:border-gray-600 transition">
+        Reset filters
+      </button>
+    </div>
+
+    <div class="mt-6 pt-5 border-t border-gray-800">
+      <button id="export-state"
+        class="w-full text-xs text-gray-400 hover:text-white py-2 border border-gray-800 rounded hover:border-emerald-700 transition flex items-center justify-center gap-2"
+        data-tip="Copy your current Shortlist/Applied/Pass state as a JS snippet — paste into PRESET_STATUSES in index.html to bake it into the deployed page.">
+        <span>↗</span> Export state
+      </button>
+    </div>
+
+    <div class="mt-8 pt-5 border-t border-gray-800">
+      <div class="text-xs text-gray-500 leading-relaxed">
+        <div class="font-semibold text-gray-400 mb-1">Winner pattern</div>
+        Domain experts beat pro devs. Pick a real-world pain from your field — not a generic dev tool.
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="flex-1 p-8 max-w-6xl">
+    <div class="mb-8">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 class="text-3xl font-bold text-white tracking-tight">Shortlist</h2>
+          <p class="text-gray-400 mt-2 text-sm leading-relaxed">
+            Curated AI hackathons for Korea-based remote participation. Reference event:
+            <a href="https://cerebralvalley.ai/e/built-with-4-7-hackathon" target="_blank" class="text-emerald-400 hover:text-emerald-300 underline decoration-dotted">Cerebral Valley Built with 4.7</a>.
+            Click a card to expand. Your notes & status are saved locally.
+          </p>
+        </div>
+        <div class="text-right text-xs text-gray-500 shrink-0">
+          <div id="last-updated"></div>
+          <div class="mt-1">Today: <span class="text-gray-300" id="td"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="board" class="space-y-3"></div>
+
+    <div id="empty-state" class="hidden text-center py-20 text-gray-500">
+      <div class="text-5xl mb-3 opacity-30">∅</div>
+      <div class="text-sm">No contests match these filters.</div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ───────────────────────────────────────── DATA
+const HACKATHONS = [
+  {
+    id: 'ai-co-scientist',
+    name: 'AI Co-Scientist Challenge Korea',
+    tier: 1,
+    host: '과학기술정보통신부 (MSIT) + 한국연구재단',
+    hostType: 'Government',
+    url: 'https://aicoscientist.net/',
+    remote: true, gov: true, korea: true, open: false,
+    format: 'Virtual / submission-based',
+    deadline: '2026-04-03',
+    deadlineNote: '❌ 2026 CLOSED (Apr 3) · watch for 2027 cycle ~Dec 2026',
+    prize: 'GPU support + LLM/API credits + up to ₩2.5B commercialization (top teams)',
+    cost: 'Free',
+    eligibility: 'Individual or team, open worldwide',
+    tracks: ['AI research-report writing', 'Scientific AI Agent development'],
+    highlight: '⚠ 2026 cycle closed Apr 3. Best credential-to-effort ratio overall — mark it for Dec 2026 when 2027 cycle opens. Promo hub: aicoscientist.net · official submission portal: aifactory.space.',
+    tags: ['government', 'research', 'AI-agent', 'remote'],
+    winners: [
+      { place: 'Hub', who: 'aicoscientist.net (promo site)', project: 'Official MSIT/KRF informational hub · 2026 cycle: Track 1 Dec 10 → Jan 31, Track 2 Jan 2 → Apr 3 — use as a calendar template for 2027', link: 'https://aicoscientist.net/', linkLabel: '↗ hub' },
+      { place: 'Track 2', who: '2026 grand prize — TBA', project: 'Up to ₩2.5B commercialization support + 1-yr supercomputer GPU voucher', link: 'https://aifactory.space/task/9237/overview', linkLabel: '↗ task page' },
+      { place: 'Track 1', who: '2026 grand prize — TBA', project: 'AI-utilized research report · ₩5M + R&D collaboration with KRF', link: 'https://aicoscientist.net/', linkLabel: '↗ official' },
+      { place: 'Platform', who: 'AI Factory (aifactory.space)', project: 'Browse past scientific-AI competitions for agent patterns (literature review, experiment planning, hypothesis gen)', link: 'https://aifactory.space/', linkLabel: '↗ gallery' }
+    ]
+  },
+  {
+    id: 'nipa-nationwide',
+    name: '전국민 AI 경진대회 (Nationwide AI Competition)',
+    tier: 1,
+    host: 'MSIT / NIPA',
+    hostType: 'Government',
+    url: 'https://aichallenge4all.or.kr/',
+    remote: true, gov: true, korea: true, open: true,
+    format: 'Multi-tier, months-long',
+    deadline: '2026-11-30',
+    deadlineNote: '✅ OPEN · opened Mar 26 · prelims+finals Apr–Nov · festival+awards Dec',
+    prize: '₩2.6B total prize pool · 15 tracks',
+    cost: 'Free',
+    eligibility: 'Open to all Koreans (general / K-12 / university+researcher tracks)',
+    tracks: ['General public', 'K-12', 'University & researcher', 'Digital vulnerable (국민행복 AI)'],
+    highlight: 'Currently open. Official hub is aichallenge4all.or.kr (not nipa.kr). 15 tracks, ₩2.6B pool. Target 2M+ participants. Long window — low pressure.',
+    tags: ['government', 'nationwide', 'multi-tier'],
+    winners: [
+      { place: 'Official', who: '모두의 AI 경진대회', project: '15 tracks · ₩3B total prize pool · finals festival Dec 2026. Track list + prior winners published here.', link: 'https://aichallenge4all.or.kr/', linkLabel: '↗ official' },
+      { place: 'History', who: 'Namu-wiki summary', project: 'All prior editions, winners, and track evolution — useful for picking a niche', link: 'https://namu.wiki/w/%EC%A0%84%EA%B5%AD%EB%AF%BCAI%EA%B2%BD%EC%A7%84%EB%8C%80%ED%9A%8C', linkLabel: '↗ 나무위키' },
+      { place: 'Related', who: '국방 AI 경진대회 (MAICON)', project: 'Same gov-format reference: military imagery/logistics challenges — winner gallery public', link: 'https://maicon.kr/', linkLabel: '↗ MAICON' }
+    ]
+  },
+  {
+    id: 'kisti',
+    name: 'KISTI Open Hackathon',
+    tier: 1,
+    host: 'Korea Institute of Science & Technology Information',
+    hostType: 'Government research institute',
+    url: 'https://www.aiexpertmagazine.com/kisti-open-hackathon-everything-you-need-to-know/',
+    remote: true, gov: true, korea: true, open: false,
+    format: 'Hybrid, multi-day',
+    deadline: '2026-04-03',
+    deadlineNote: '❌ 2026 round ended Apr 3 · watch for next cycle',
+    prize: 'Varies per problem',
+    cost: 'Free',
+    eligibility: 'Open, hybrid participation',
+    tracks: ['AI', 'Data science'],
+    highlight: 'Research-institute backing — strong signal on a CV.',
+    tags: ['government', 'research-institute', 'data-science'],
+    winners: [
+      { place: '2026', who: '8 selected teams (4 HPC + 4 AI)', project: 'Materials engineering, bioscience, molecular dynamics, CFD', link: 'https://www.kisti.re.kr/eng/news/post/eng_news/6942', linkLabel: '↗ KISTI news' },
+      { place: 'Platform', who: 'Open Hackathons (NVIDIA + HPE)', project: 'Multi-event site with past winners across all Open Hackathons — browse for HPC/AI project patterns', link: 'https://www.openhackathons.org/s/siteevent/a0CUP000036pAfX2AU/se000443', linkLabel: '↗ event page' },
+      { place: 'Style', who: 'Research-grade', project: 'Scientific problems (not consumer apps) — domain = physics/bio/chem/materials', link: 'https://www.aiexpertmagazine.com/kisti-open-hackathon-everything-you-need-to-know/', linkLabel: '↗ guide' }
+    ]
+  },
+  {
+    id: 'cerebral-valley',
+    name: 'Cerebral Valley × Anthropic · Built with 4.7',
+    tier: 2,
+    host: 'Cerebral Valley + Anthropic',
+    hostType: 'Private / AI lab-backed',
+    url: 'https://cerebralvalley.ai/hackathons',
+    remote: true, gov: false, korea: false, open: false,
+    format: 'Fully virtual, week-long',
+    deadline: '2026-04-26',
+    deadlineNote: '❌ Ended Apr 26 · winners announced · watch CV hub for Opus 4.8 cycle',
+    prize: '$100K prize pool + $500 API credits each',
+    cost: 'Free',
+    eligibility: 'Open worldwide, team ≤ 2',
+    tracks: ['Built with Claude Opus 4.7 (open)'],
+    highlight: 'YOUR reference event — winners revealed. 5 categories awarded; not a US sweep — Türkiye, France, Denmark, Chile took top spots (domain-expert-wins thesis still holds). Series cadence ~3 mo · next cycle likely Jul–Aug 2026.',
+    tags: ['anthropic', 'remote', 'claude-code'],
+    winners: [
+      { place: '🥇 Gold', who: 'Bedirhan Keskin (🇹🇷) — MedKit', project: 'Top prize at Built with 4.7 · medical-domain Claude Code build', link: 'https://cerebralvalley.ai/e/built-with-4-7-hackathon/hackathon/gallery', linkLabel: '↗ gallery' },
+      { place: '🥈 Silver', who: 'Alexis Chapellier (🇫🇷) — Wrench Board', project: '2nd place · workshop / mechanical productivity tool', link: 'https://cerebralvalley.ai/e/built-with-4-7-hackathon/hackathon/gallery', linkLabel: '↗ gallery' },
+      { place: 'Creative', who: 'Rene Hangstrup Møller (🇩🇰) — Virtual Puppet Theater', project: 'Most Creative Opus 4.7 Exploration · novel use-case experiment', link: 'https://cerebralvalley.ai/e/built-with-4-7-hackathon/hackathon/gallery', linkLabel: '↗ gallery' },
+      { place: 'Thinking', who: 'Benjamin Torralbo (🇨🇱) — MaestrIA', project: '"Keep Thinking" Prize · best use of extended reasoning', link: 'https://cerebralvalley.ai/e/built-with-4-7-hackathon/hackathon/gallery', linkLabel: '↗ gallery' },
+      { place: 'Agents', who: 'Benguezzou + Hnaien (🇫🇷) — ARIA', project: 'Best Use of Claude Managed Agents · multi-agent orchestration', link: 'https://cerebralvalley.ai/e/built-with-4-7-hackathon/hackathon/gallery', linkLabel: '↗ gallery' },
+      { place: 'Next?', who: 'Code with Claude conf · May 2026', project: 'Anthropic developer conference — past hackathons announced around this. Watch for Opus 4.8 hackathon.', link: 'https://claude.com/code-with-claude', linkLabel: '↗ conference' },
+      { place: '1st (4.6)', who: 'Mike Brown (CA attorney) — CrossBeam', project: 'AI-powered ADU permit assistant · reads architectural plans, cross-references CA law, drafts reply to city rejection letters', link: 'https://cc-crossbeam.vercel.app/', linkLabel: '↗ live demo' },
+      { place: '1st · code', who: 'CrossBeam repo', project: 'Full Claude Code setup + skills + prompts', link: 'https://github.com/mikeOnBreeze/cc-crossbeam', linkLabel: '↗ github' },
+      { place: '2nd (4.6)', who: 'Jon McBee — Elisa', project: 'Visual block-programming for kids · snap blocks → Claude agents generate real code. First user: his 12-yr-old daughter.', link: 'https://www.youtube.com/watch?v=eROQL5WTDbA', linkLabel: '↗ video' },
+      { place: '3rd (4.6)', who: 'Michał Nedoszytko MD — PostVisit.ai', project: 'Interventional cardiologist (Brussels) built an AI companion for patients after hospital visits — medical history + evidence-based guidance', link: 'http://postvisit.ai', linkLabel: '↗ live demo' },
+      { place: 'Analysis', who: 'Deep-dive on every winner', project: '"A Lawyer Just Beat 500 Developers" — why domain experts won', link: 'https://www.2ndorderthinkers.com/p/a-lawyer-just-beat-500-developers', linkLabel: '↗ article' }
+    ]
+  },
+  {
+    id: 'hack-nation',
+    name: 'Hack-Nation Global AI Hackathon',
+    tier: 2,
+    host: 'MIT-backed',
+    hostType: 'Academic / community',
+    url: 'https://luma.com/90ndbjym',
+    remote: true, gov: false, korea: false, open: false,
+    format: '24-hour global sprint, hybrid hubs + virtual',
+    deadline: '2026-04-11',
+    deadlineNote: '❌ Apps closed Apr 11 · event Apr 25–26 done · winners TBA',
+    prize: '$30K+ cash + $150K+ API credits (OpenAI/Cursor/Lovable)',
+    cost: 'Free',
+    eligibility: '60+ countries, solo or team',
+    tracks: ['AI automation', 'Healthcare AI', 'Agents & assistants', 'Productivity', 'Creative AI'],
+    highlight: 'Apps closed for this edition. 24h sprint Apr 25–26, 2026. Watch for next round ~Q4 2026.',
+    tags: ['MIT', 'remote', '24-hour'],
+    winners: [
+      { place: 'Gallery', who: 'Devpost past submissions', project: 'Browse all prior Hack-Nation projects · filter by category · view live demos', link: 'https://hack-nation.devpost.com/', linkLabel: '↗ devpost' },
+      { place: 'Apr 25–26', who: '2026 event', project: 'Hubs: MIT, Stanford, Munich + virtual. Winners TBA after event.', link: 'https://hack-nation.ai/', linkLabel: '↗ register' },
+      { place: 'Follow-up', who: 'Venture track', project: 'Top teams get startup mentorship post-hackathon (VC intro pipeline)', link: 'https://opportunitiesforyouth.org/2026/04/02/hack-nation-global-ai-hackathon-2026-build-innovate-and-compete-for-30000-in-prizes/', linkLabel: '↗ details' }
+    ]
+  },
+  {
+    id: 'lablab',
+    name: 'lablab.ai (rolling hackathons)',
+    tier: 2,
+    host: 'lablab.ai community',
+    hostType: 'Community platform',
+    url: 'https://lablab.ai/ai-hackathons',
+    remote: true, gov: false, korea: false, open: true,
+    format: 'Online (Discord + platform), 6–10 days each',
+    deadline: '2026-11-03',
+    deadlineNote: '🔥 AMD STARTS TOMORROW (May 4) · Agentic Commerce May 11–19 · Milan May 13–20 · 🔥 Anthropic May 26–Jun 2 (open registration) · ElevenLabs Jul 28–31 · AI GENESIS Oct 26–Nov 3',
+    prize: 'Varies per event ($20K AMD · API access Anthropic · etc.)',
+    cost: 'Free',
+    eligibility: 'Open globally',
+    tracks: ['Agentic AI', 'Robotics', 'Audio AI', 'GPU/AMD', 'Genesis (frontier)'],
+    highlight: '🔥 AMD kicks off TOMORROW May 4 (deadline May 10, $20K + Radeon AI PRO R9700 GPU). Anthropic Hackathon May 26–Jun 2 (3,000 spots, Claude API access kept after submission, no selection gate) — register now and submit Early Access form with the same email. Both fully remote — best low-stakes Anthropic-track entry.',
+    tags: ['remote', 'rolling', 'community'],
+    winners: [
+      { place: '🔥 Anthropic', who: 'May 26 – Jun 2, 2026', project: '3,000 spots, first-come · Claude API access (kept after if you submit) · open to anyone, no selection gate', link: 'https://lablab.ai/ai-hackathons/anthropic-ai-hackathon', linkLabel: '↗ register' },
+      { place: 'AMD', who: 'May 4–10, 2026', project: '$20K pool + Radeon AI PRO R9700 GPU + cloud credits · 100% online option · GPU vendor sponsor', link: 'https://lablab.ai/ai-hackathons/amd-developer', linkLabel: '↗ event' },
+      { place: 'ElevenLabs', who: 'Jul 28–31, 2026', project: '3-day audio AI sprint · fully remote · low-stakes warmup', link: 'https://lablab.ai/ai-hackathons/eleven-labs-ai-hackathon', linkLabel: '↗ event' },
+      { place: 'AI GENESIS', who: 'Oct 26 – Nov 3, 2026', project: 'Online build phase + Dubai finals · frontier-AI track · finals favor onsite presence', link: 'https://lablab.ai/ai-hackathons/ai-genesis-2026', linkLabel: '↗ event' },
+      { place: 'Robotics', who: 'Ladybug', project: 'Robot arm that reads children\'s books aloud — Gemini vision + ElevenLabs TTS. Full product site.', link: 'https://ladybug.bot/', linkLabel: '↗ live site' },
+      { place: 'Complete AI', who: 'OnboardEase', project: 'Multi-agent employee-onboarding automation — won on business utility + multi-agent workspace use', link: 'https://github.com/lablab-ai/community-content/blob/main/blog/en/complete-ai-hackathon-summary.mdx', linkLabel: '↗ writeup' },
+      { place: 'Game', who: 'GameForge AI', project: '4 specialized agents + LangGraph pipeline → playable browser game in <60s from text prompt', link: 'https://www.raptors.dev/blog/building-gameforge-ai-a-technical-deep-dive', linkLabel: '↗ deep-dive' },
+      { place: 'Gallery', who: 'lablab recent winners', project: 'Full public gallery: Stylin\', Inventors-in-AI, 100+ past projects with live demos', link: 'https://lablab.ai/apps/recent-winners', linkLabel: '↗ gallery' }
+    ]
+  },
+  {
+    id: 'devpost-claude',
+    name: 'Claude Hackathon 2026 (Columbia × NYU)',
+    tier: 2,
+    host: 'Columbia + NYU',
+    hostType: 'Academic',
+    url: 'https://claude-hackathon-2026.devpost.com/',
+    remote: false, gov: false, korea: false, open: false,
+    format: 'In-person one-day (Columbia Business School)',
+    deadline: '2026-04-13',
+    deadlineNote: '❌ Ended Apr 13 · 106 participants · winners TBA',
+    prize: '$3K Anthropic credits + cash',
+    cost: 'Free',
+    eligibility: 'Columbia + NYU students (in-person)',
+    tracks: ['Built with Claude'],
+    highlight: 'In-person only (NYC) — not a fit for Korea. Listed for reference; watch Anthropic Devpost tag for remote-friendly events.',
+    tags: ['anthropic', 'devpost'],
+    winners: [
+      { place: 'Gallery', who: 'Devpost submissions', project: 'Full public submission gallery · browse every project · watch demo videos', link: 'https://claude-hackathon-2026.devpost.com/project-gallery', linkLabel: '↗ gallery' },
+      { place: 'Apr 12', who: 'Columbia × NYU · 200 builders', project: '$3K Anthropic credits + cash prizes · CBS AI Club / Claude Builder Club hosted', link: 'https://claude-hackathon-2026.devpost.com/', linkLabel: '↗ event page' },
+      { place: 'Related', who: 'Claude Builders Club Hackathon', project: 'Similar format — parallel event, also on Devpost', link: 'https://claude-builders-club-hackathon.devpost.com/', linkLabel: '↗ event' }
+    ]
+  },
+  {
+    id: 'rallpthon',
+    name: 'Rallpthon (랠프톤)',
+    tier: 3,
+    host: 'Naver / Kakao sponsored',
+    hostType: 'Private (Korean tech)',
+    url: 'https://en.sedaily.com/news/2026/03/25/korean-ai-agent-hackathon-ralphthon-expands-to-us-with',
+    remote: true, gov: false, korea: true, open: false,
+    format: '2h human ideation → AI agents build rest',
+    deadline: null,
+    deadlineNote: '❌ Last round Mar 29 (Seoul + SF concurrent) · next TBA',
+    prize: 'Varies',
+    cost: 'Free',
+    eligibility: 'Korean devs (expanding globally)',
+    tracks: ['AI agent building'],
+    highlight: 'On-brand for Claude Code — agent-driven development.',
+    tags: ['korea', 'naver', 'kakao', 'AI-agent'],
+    winners: [
+      { place: 'Seoul Feb', who: 'Winning team', project: 'AI agents wrote 100,000 LOC with ZERO human intervention during build', link: 'https://en.sedaily.com/finance/2026/03/24/korean-ai-hackathon-rallpthon-expands-to-us-with-growing', linkLabel: '↗ article' },
+      { place: 'Format', who: '500K LOC total', project: 'Across all teams — judges reward orchestration quality over raw output', link: 'https://en.sedaily.com/news/2026/03/25/korean-ai-agent-hackathon-ralphthon-expands-to-us-with', linkLabel: '↗ coverage' },
+      { place: 'Mar 29', who: 'Seoul + SF concurrent', project: 'Team Attention hosted simultaneous SF/Seoul rounds — global expansion news', link: 'https://finance.biggo.com/news/phjYIZ0BNZYCTTDv7AoN', linkLabel: '↗ news' }
+    ]
+  },
+  {
+    id: 'snowflake-korea',
+    name: 'Snowflake Hackathon Korea 2026',
+    tier: 3,
+    host: 'Snowflake Korea',
+    hostType: 'Corporate',
+    url: 'https://www.snowflake.com/snowflake-hackathon-2026-korea/',
+    remote: false, gov: false, korea: true, open: false,
+    format: 'Application + build + finals',
+    deadline: '2026-04-29',
+    deadlineNote: '❌ Finals Apr 29 · wrapped · 500+ participants · winners TBA',
+    prize: 'Cash + Snowflake credits',
+    cost: 'Free',
+    eligibility: 'Tech track + Business track (non-dev OK)',
+    tracks: ['Tech', 'Business'],
+    highlight: '2nd year running. Wrapped Apr 29 — Business Track winner: Team Chaos with "Sangkwon" (AI commercial-district analysis). 500+ participants, judges from LG U+, Naver Webtoon, Richgo, SPH, Ajeongdang. Watch for 2027 round.',
+    tags: ['korea', 'snowflake', 'data'],
+    winners: [
+      { place: '🥇 Business', who: 'Team Chaos — Sangkwon (상권)', project: 'AI commercial-district analysis service · won Business Track Apr 29', link: 'https://www.digitaltoday.co.kr/en/view/52318/snowflake-wraps-up-ai-data-hackathon-2026', linkLabel: '↗ coverage' },
+      { place: 'Recap', who: 'Digital Today coverage', project: '2026 wrap-up · 6 finalist teams (3 tech / 3 business) · LG U+ + Naver Webtoon + Richgo/SPH/Ajeongdang judges', link: 'https://www.digitaltoday.co.kr/en/view/52318/snowflake-wraps-up-ai-data-hackathon-2026', linkLabel: '↗ wrap-up' },
+      { place: 'Official', who: 'Snowflake Korea event page', project: 'Finals Apr 29 · 6 teams · Tech + Business tracks — full winner list to be posted here', link: 'https://www.snowflake.com/snowflake-hackathon-2026-korea/', linkLabel: '↗ official' },
+      { place: 'Reference', who: 'RAG \'n\' ROLL Devpost', project: 'Completed Snowflake × Mistral global hackathon — browse winning Cortex + Streamlit apps', link: 'https://snowflake-mistral-rag.devpost.com/', linkLabel: '↗ devpost' },
+      { place: 'Playbook', who: '10 Winning Ideas (Medium)', project: 'Tactical guide: winning patterns for Snowflake hackathons — Cortex, Streamlit, demo narratives', link: 'https://medium.com/demohub-tutorials/10-winning-ideas-for-crushing-your-ai-hackathon-with-snowflake-8a982be84944', linkLabel: '↗ article' }
+    ]
+  },
+  {
+    id: 'qualcomm-edge',
+    name: 'Qualcomm Edge AI Developer Hackathon Korea',
+    tier: 3,
+    host: 'Qualcomm',
+    hostType: 'Corporate',
+    url: 'https://www.qualcomm.com/developer/blog/2026/02/on-device-ai-developers-korea',
+    remote: false, gov: false, korea: true, open: false,
+    format: 'On-site (on-device AI on Snapdragon / Copilot+ PCs)',
+    deadline: null,
+    deadlineNote: 'Past event — watch for 2026 round',
+    prize: 'Hardware + cash',
+    cost: 'Free',
+    eligibility: 'Korean developers',
+    tracks: ['On-device AI', 'Edge inference'],
+    highlight: 'Hardware-focused. Niche but strong for embedded/edge AI.',
+    tags: ['korea', 'qualcomm', 'edge-AI', 'on-device'],
+    winners: [
+      { place: 'Official', who: 'Qualcomm Korea recap', project: 'Official winners + highlights blog — named teams and their on-device Snapdragon apps', link: 'https://www.qualcomm.com/developer/blog/2026/02/on-device-ai-developers-korea', linkLabel: '↗ recap' },
+      { place: 'NYU case', who: 'Prior Snapdragon X winners', project: 'Detailed writeup: how NYU hackathon winners swapped cloud calls for on-device NPU inference', link: 'https://www.qualcomm.com/developer/blog/2025/07/from-old-to-elite-how-nyu-hack-winners-embraced-snapdragon', linkLabel: '↗ case study' },
+      { place: 'Devpost', who: 'Windows on Snapdragon AI', project: 'Global Snapdragon hackathon on Devpost · browse winning on-device AI projects', link: 'https://wos-ai.devpost.com/', linkLabel: '↗ gallery' }
+    ]
+  },
+  {
+    id: 'nvidia-nemotron-seoul',
+    name: 'Nvidia Nemotron Developer Days Seoul',
+    tier: 3,
+    host: 'Nvidia',
+    hostType: 'Corporate',
+    url: 'https://www.digitaltoday.co.kr/en/view/47483/nvidia-to-hold-nemotron-developer-days-seoul-2026-first-event-in-south-korea',
+    remote: false, gov: false, korea: true, open: false,
+    format: 'On-site (D.CAMP Mapo, Seoul) · includes hackathon',
+    deadline: '2026-04-22',
+    deadlineNote: '❌ Ended Apr 21–22 · first-ever Seoul edition · watch for H2 2026 return',
+    prize: 'Nvidia credits + hardware',
+    cost: 'Free',
+    eligibility: 'Korean developers',
+    tracks: ['Nemotron LLM', 'Agent dev'],
+    highlight: 'Nvidia\'s first event in Korea. Just happened. Worth tracking — likely returns H2 2026 or 2027.',
+    tags: ['korea', 'nvidia', 'llm', 'agents'],
+    winners: [
+      { place: 'Official', who: 'Nemotron docs', project: 'Nemotron model family + agent-building SDK · start here for next edition prep', link: 'https://developer.nvidia.com/nemotron', linkLabel: '↗ nvidia dev' },
+      { place: 'Recap', who: 'Digital Today coverage', project: 'First Seoul Nemotron Developer Day — context on format, sponsors, attendees', link: 'https://www.digitaltoday.co.kr/en/view/47483/nvidia-to-hold-nemotron-developer-days-seoul-2026-first-event-in-south-korea', linkLabel: '↗ article' }
+    ]
+  },
+  {
+    id: 'deepmind-agi-kaggle',
+    name: 'DeepMind AGI Cognitive Abilities Hackathon',
+    tier: 2,
+    host: 'Google DeepMind (on Kaggle)',
+    hostType: 'AI lab',
+    url: 'https://www.kaggle.com/competitions',
+    remote: true, gov: false, korea: false, open: true,
+    format: 'Async submission via Kaggle',
+    deadline: null,
+    deadlineNote: '✅ OPEN · launched Mar 17 · async/rolling',
+    prize: '$200K total pool',
+    cost: 'Free',
+    eligibility: 'Open globally, solo or team',
+    tracks: ['Eval design for metacognition / attention / reasoning'],
+    highlight: '🔥 Top-tier AI lab sponsor (DeepMind), fully remote on Kaggle, async — perfect for solo Korea-based builder. Research framing fits "domain expert wins" thesis if you have any cog-sci / eval angle.',
+    tags: ['deepmind', 'kaggle', 'remote', 'research', 'evals'],
+    winners: [
+      { place: 'Official', who: 'DeepMind announcement', project: 'AGI Cognitive Taxonomy Hackathon · build evals for metacognitive abilities · launched Mar 17, 2026', link: 'https://news.800.works/news/2026-03-19/deepmind-agi-cognitive-taxonomy-hackathon/', linkLabel: '↗ article' },
+      { place: 'Platform', who: 'Kaggle competitions', project: 'Browse the live competition + leaderboard + winning notebooks', link: 'https://www.kaggle.com/competitions', linkLabel: '↗ kaggle' }
+    ]
+  },
+  {
+    id: 'gwangju-creative-ai',
+    name: '2026 전국민 AI 창작 경진대회 (Gwangju)',
+    tier: 1,
+    host: '국립광주과학관 (Gov)',
+    hostType: 'Government',
+    url: 'https://linkareer.com/activity/309400',
+    remote: true, gov: true, korea: true, open: true,
+    format: 'Online (email submission)',
+    deadline: '2026-06-30',
+    deadlineNote: '✅ OPEN · Apr 20 – Jun 30 · email submission',
+    prize: '₩7.2M total · 부총리상 (Deputy-PM award) for grand prize',
+    cost: 'Free',
+    eligibility: 'Open to all (Korean residents)',
+    tracks: ['AI 창작 (creative AI)'],
+    highlight: 'Just opened. Government-hosted, fully remote (online submission), Deputy-PM award level credential. Lower competition than national events.',
+    tags: ['government', 'korea', 'remote', 'creative-AI'],
+    winners: [
+      { place: 'Official', who: 'linkareer listing', project: 'Full event details · submission template · prize breakdown', link: 'https://linkareer.com/activity/309400', linkLabel: '↗ linkareer' },
+      { place: 'Host', who: '국립광주과학관', project: 'Korea National Gwangju Science Museum — government science institution', link: 'https://www.sciencecenter.or.kr/', linkLabel: '↗ official' }
+    ]
+  },
+  {
+    id: 'superai-next-sg',
+    name: 'SuperAI NEXT Hackathon 2026 (Singapore)',
+    tier: 2,
+    host: 'AWS + SuperAI Singapore',
+    hostType: 'Corporate / conference',
+    url: 'https://www.superai.com/next-hackathon',
+    remote: false, gov: false, korea: false, open: true,
+    format: 'Onsite (Marina Bay Sands)',
+    deadline: '2026-05-19',
+    deadlineNote: '✅ OPEN · apply by May 19 · 36-hr hackathon at Marina Bay Sands · conference Jun 10–11',
+    prize: '$100K+ prize pool · backed by AWS + Vercel',
+    cost: 'Free',
+    eligibility: 'Open globally',
+    tracks: ['Built with AWS / Bedrock / Claude on AWS'],
+    highlight: 'Closest "Cerebral Valley equivalent" in Asia. Singapore is short-haul from Korea. 36-hour sprint at Marina Bay Sands · pitches to 10,000+ conf attendees — strong demo upside.',
+    tags: ['aws', 'asia', 'singapore', 'conference'],
+    winners: [
+      { place: 'Official', who: 'SuperAI NEXT page', project: 'Full hackathon brief · sponsors · agenda · application form', link: 'https://www.superai.com/next-hackathon', linkLabel: '↗ apply' }
+    ]
+  },
+  {
+    id: 'ai-hack-camp-kr',
+    name: '2026 AI HACK CAMP (국립중앙과학관)',
+    tier: 1,
+    host: 'MSIT / National Science Museum',
+    hostType: 'Government',
+    url: 'https://linkareer.com/activity/309035',
+    remote: false, gov: true, korea: true, open: false,
+    format: 'Onsite Daejeon · 1박2일',
+    deadline: '2026-04-24',
+    deadlineNote: '❌ Registration likely closed Apr 24 · event May 16–17 · check linkareer for late slots',
+    prize: 'Government recognition + prizes',
+    cost: 'Free',
+    eligibility: 'Korean residents',
+    tracks: ['Digital health', 'Safety', 'Inclusion', 'Education'],
+    highlight: 'Korea-local government event, Daejeon onsite. 4 social-impact tracks fit "domain expert wins" pattern.',
+    tags: ['government', 'korea', 'onsite', 'social-impact'],
+    winners: [
+      { place: 'Official', who: 'linkareer listing', project: 'Tracks, application form, schedule', link: 'https://linkareer.com/activity/309035', linkLabel: '↗ linkareer' },
+      { place: 'Host', who: '국립중앙과학관', project: 'Korea National Science Museum (Daejeon) — government institution', link: 'https://www.science.go.kr/', linkLabel: '↗ official' }
+    ]
+  },
+  {
+    id: 'find-evil-sans',
+    name: 'FIND EVIL! Hackathon (SANS × Claude Code)',
+    tier: 2,
+    host: 'SANS Institute',
+    hostType: 'Security training org',
+    url: 'https://findevil.devpost.com/',
+    remote: true, gov: false, korea: false, open: true,
+    format: 'Async / virtual · 2-month build window',
+    deadline: '2026-06-15',
+    deadlineNote: '🔥 OPEN NOW · build phase Apr 15 – Jun 15 · judging Jun 19 – Jul 3 · winners ~Jul 8',
+    prize: '$22K+ in prizes',
+    cost: 'Free',
+    eligibility: 'Open globally · solo or team up to 5',
+    tracks: ['Autonomous AI incident response (Protocol SIFT + MCP)'],
+    highlight: '🔥 Fully remote, 2-month window, Claude Code is the PREFERRED framework. Background: response to Anthropic GTG-1002 disclosure (state-sponsored attackers ran Claude Code at 80–90% autonomy). Build the defender. Niche fit if you have any infosec angle.',
+    tags: ['anthropic', 'claude-code', 'remote', 'security', 'mcp', 'agents'],
+    winners: [
+      { place: 'Official', who: 'Devpost rules + signup', project: 'Full eligibility, judging criteria, prize breakdown · register here', link: 'https://findevil.devpost.com/', linkLabel: '↗ devpost' },
+      { place: 'Context', who: 'SANS launch blog', project: 'Why this exists: GTG-1002 attack architecture · why Claude Code is the preferred agentic framework', link: 'https://www.sans.org/blog/sans-launches-first-hackathon-autonomous-incident-response/', linkLabel: '↗ launch post' },
+      { place: 'Platform', who: 'Protocol SIFT', project: 'PoC framework wrapping SIFT Workstation\'s 200+ IR tools via MCP — entries must extend this', link: 'https://findevil.devpost.com/rules', linkLabel: '↗ rules' }
+    ]
+  },
+  {
+    id: 'bridge-kr-jp',
+    name: 'The Bridge Hackathon (Korea × Japan GDGoC)',
+    tier: 3,
+    host: 'GDGoC (Korea Univ + Yonsei + Waseda + UTokyo)',
+    hostType: 'Google Developer Group / academic',
+    url: 'https://gdg.community.dev/events/details/google-gdg-on-campus-waseda-university-tokyo-japan-presents-2026-korea-x-japan-gdgoc-the-bridge-hackathon-build-w-ai/',
+    remote: false, gov: false, korea: true, open: false,
+    format: 'Onsite Korea University Seoul Campus · 2-day',
+    deadline: '2026-05-16',
+    deadlineNote: '⚠ Event May 16–17 Seoul (13 days out, registration likely closed) · check GDG page',
+    prize: 'TBA · GDG / Google credits',
+    cost: 'Free',
+    eligibility: 'Korea + Japan students primarily',
+    tracks: ['Aging societies', 'Tourism', 'Language barriers', 'Sustainability'],
+    highlight: 'Korea-local, in-person Seoul. Cross-border framing fits well for Japan-related domain expertise. Lower stakes vs. national gov events but solid GDG/Google network.',
+    tags: ['korea', 'japan', 'gdg', 'google', 'onsite'],
+    winners: [
+      { place: 'Official', who: 'GDG event page', project: 'Full agenda, application form, location details', link: 'https://gdg.community.dev/events/details/google-gdg-on-campus-waseda-university-tokyo-japan-presents-2026-korea-x-japan-gdgoc-the-bridge-hackathon-build-w-ai/', linkLabel: '↗ GDG' }
+    ]
+  }
+];
+
+// ───────────────────────────────────────── STATE
+const STATUSES = { pick: 'Shortlisted', applied: 'Applied', pass: 'Passed' };
+
+// Baked-in defaults for the deployed static HTML.
+// Click "Export state" in the sidebar to regenerate this from your current localStorage,
+// then paste the printed object below. Local browser changes always win over presets.
+const PRESET_STATUSES = {
+  // 'hack-id': 'pick' | 'applied' | 'pass'
+};
+
+const state = {
+  tiers: new Set([1, 2, 3]),
+  remote: false, gov: false, open: false,
+  status: 'all',
+  sort: 'tier'
+};
+
+// localStorage wins; if no key, fall back to PRESET_STATUSES.
+// Empty-string in localStorage = explicit "cleared" (overrides preset).
+const loadStatus = (id) => {
+  const v = localStorage.getItem(`hack-status-${id}`);
+  if (v !== null) return v;
+  return PRESET_STATUSES[id] || '';
+};
+const saveStatus = (id, s) => {
+  if (s) localStorage.setItem(`hack-status-${id}`, s);
+  else if (PRESET_STATUSES[id]) localStorage.setItem(`hack-status-${id}`, '');
+  else localStorage.removeItem(`hack-status-${id}`);
+};
+const loadNotes = (id) => localStorage.getItem(`hack-notes-${id}`) || '';
+const saveNotes = (id, n) => n ? localStorage.setItem(`hack-notes-${id}`, n) : localStorage.removeItem(`hack-notes-${id}`);
+
+// ───────────────────────────────────────── HELPERS
+const tierColor = (t) => ({ 1: 'emerald', 2: 'indigo', 3: 'amber' })[t];
+const tierLabel = (t) => ({ 1: 'Gov-hosted', 2: 'Global remote', 3: 'Korea-local' })[t];
+const STATUS_COLOR = { pick: 'emerald', applied: 'amber', pass: 'rose' };
+
+function daysUntil(date) {
+  if (!date) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const d = new Date(date);
+  return Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+}
+
+function deadlineBadge(h) {
+  if (!h.deadline) return `<span class="text-gray-500">${h.deadlineNote || '—'}</span>`;
+  const days = daysUntil(h.deadline);
+  if (days < 0) return `<span class="text-gray-500">${h.deadlineNote || 'Closed'}</span>`;
+  if (days <= 14) return `<span class="text-rose-400 font-semibold">${days}d left · ${h.deadline}</span>`;
+  if (days <= 60) return `<span class="text-amber-400">${days}d · ${h.deadline}</span>`;
+  return `<span class="text-emerald-400">${days}d · ${h.deadline}</span>`;
+}
+
+// ───────────────────────────────────────── RENDER
+function card(h) {
+  const color = tierColor(h.tier);
+  const status = loadStatus(h.id);
+  const notes = loadNotes(h.id);
+  const winners = h.winners ? `
+    <div class="mt-4 pt-3 border-t border-gray-800">
+      <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Past winners / examples</div>
+      <ul class="space-y-2 text-sm">
+        ${h.winners.map(w => `
+          <li class="flex gap-2 items-start">
+            <span class="shrink-0 text-[10px] font-bold text-${color}-400 w-20 pt-0.5 uppercase tracking-wider">${w.place}</span>
+            <div class="flex-1 min-w-0">
+              <span class="text-white font-medium">${w.who}</span>
+              <span class="text-gray-300"> — ${w.project}</span>
+              ${w.link ? ` <a href="${w.link}" target="_blank" onclick="event.stopPropagation()" class="inline-flex items-center gap-0.5 text-xs text-${color}-400 hover:text-${color}-300 whitespace-nowrap ml-1 underline decoration-dotted">${w.linkLabel || '↗ view'}</a>` : ''}
+            </div>
+          </li>
+        `).join('')}
+      </ul>
+    </div>
+  ` : '';
+
+  return `
+  <details class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden hover:border-${color}-800/60 transition animate-fade-in" data-id="${h.id}" ${status === 'pick' ? 'open' : ''}>
+    <summary class="p-4 flex items-center gap-4 hover:bg-gray-800/30 transition">
+      <span class="chev text-gray-600 text-xs">▶</span>
+      <span class="w-2 h-2 rounded-full bg-${color}-500 shrink-0"></span>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <h3 class="font-semibold text-white truncate">${h.name}</h3>
+          ${status ? (() => { const sc = STATUS_COLOR[status]; return `<span class="text-[10px] px-1.5 py-0.5 rounded bg-${sc}-900/50 text-${sc}-300 border border-${sc}-800/50 uppercase tracking-wider">${STATUSES[status]}</span>`; })() : ''}
+          ${notes ? `<span class="text-[10px] text-gray-500">✎ note</span>` : ''}
+        </div>
+        <div class="text-xs text-gray-400 mt-0.5">${h.host}</div>
+      </div>
+      <div class="text-right text-xs shrink-0">
+        <div>${deadlineBadge(h)}</div>
+        <div class="text-gray-500 mt-0.5">${tierLabel(h.tier)}</div>
+      </div>
+    </summary>
+    <div class="px-4 pb-4 pt-1 border-t border-gray-800/60">
+      <p class="text-sm text-${color}-300/90 italic mb-3">${h.highlight}</p>
+
+      <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+        <div><span class="text-gray-500 text-xs uppercase tracking-wider">Format</span><div class="text-gray-200">${h.format}</div></div>
+        <div><span class="text-gray-500 text-xs uppercase tracking-wider">Deadline</span><div>${deadlineBadge(h)}</div></div>
+        <div><span class="text-gray-500 text-xs uppercase tracking-wider">Prize</span><div class="text-gray-200">${h.prize}</div></div>
+        <div><span class="text-gray-500 text-xs uppercase tracking-wider">Cost</span><div class="text-gray-200">${h.cost}</div></div>
+        <div class="col-span-2"><span class="text-gray-500 text-xs uppercase tracking-wider">Eligibility</span><div class="text-gray-200">${h.eligibility}</div></div>
+        <div class="col-span-2">
+          <span class="text-gray-500 text-xs uppercase tracking-wider">Tracks</span>
+          <div class="flex flex-wrap gap-1.5 mt-1">
+            ${h.tracks.map(t => `<span class="text-xs px-2 py-0.5 rounded bg-gray-800 text-gray-300 border border-gray-700">${t}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+
+      ${winners}
+
+      <div class="mt-4 pt-3 border-t border-gray-800 flex items-center gap-2 flex-wrap">
+        <a href="${h.url}" target="_blank" class="text-xs px-3 py-1.5 rounded bg-${color}-600/20 text-${color}-300 border border-${color}-800/60 hover:bg-${color}-600/30 transition">
+          Visit →
+        </a>
+        <div class="flex-1"></div>
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] uppercase tracking-wider text-gray-500 flex items-center gap-1">
+            Track
+            <span class="help-dot" data-tip="Your personal status — saved in this browser only (localStorage). Click a button again to clear.">?</span>
+          </span>
+          <div class="flex gap-1">
+            <button data-tip="Save to your shortlist. Card auto-expands on reload. Counts toward sidebar 'Pick' stat." class="status-btn text-xs px-3 py-1.5 rounded border transition ${status === 'pick' ? 'bg-emerald-600/30 text-emerald-300 border-emerald-700' : 'bg-gray-800/40 text-gray-400 border-gray-700 hover:text-emerald-300 hover:border-emerald-800'}" data-id="${h.id}" data-status="pick">★ Shortlist</button>
+            <button data-tip="Mark as submitted/registered. Counts toward sidebar 'Applied' stat." class="status-btn text-xs px-3 py-1.5 rounded border transition ${status === 'applied' ? 'bg-amber-600/30 text-amber-300 border-amber-700' : 'bg-gray-800/40 text-gray-400 border-gray-700 hover:text-amber-300 hover:border-amber-800'}" data-id="${h.id}" data-status="applied">✓ Applied</button>
+            <button data-tip="Hide from main dashboard. View again under Status: Passed in sidebar. Click again to un-pass." class="status-btn text-xs px-3 py-1.5 rounded border transition ${status === 'pass' ? 'bg-rose-600/30 text-rose-300 border-rose-700' : 'bg-gray-800/40 text-gray-400 border-gray-700 hover:text-rose-300 hover:border-rose-800'}" data-id="${h.id}" data-status="pass">✕ Pass</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <textarea class="notes-input w-full bg-gray-950 border border-gray-800 rounded p-2 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-${color}-700 resize-y" rows="2" placeholder="Your notes (saved locally)…" data-id="${h.id}">${notes}</textarea>
+      </div>
+    </div>
+  </details>
+  `;
+}
+
+function render() {
+  let list = HACKATHONS.filter(h => state.tiers.has(h.tier));
+  if (state.remote) list = list.filter(h => h.remote);
+  if (state.gov) list = list.filter(h => h.gov);
+  if (state.open) list = list.filter(h => h.open);
+  if (state.status === 'all') list = list.filter(h => loadStatus(h.id) !== 'pass');
+  else list = list.filter(h => loadStatus(h.id) === state.status);
+
+  if (state.sort === 'tier') list.sort((a, b) => a.tier - b.tier);
+  if (state.sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
+  if (state.sort === 'deadline') list.sort((a, b) => {
+    const da = daysUntil(a.deadline); const db = daysUntil(b.deadline);
+    if (da === null) return 1; if (db === null) return -1;
+    if (da < 0) return 1; if (db < 0) return -1;
+    return da - db;
+  });
+
+  const board = document.getElementById('board');
+  const empty = document.getElementById('empty-state');
+  if (list.length === 0) {
+    board.innerHTML = ''; empty.classList.remove('hidden');
+  } else {
+    empty.classList.add('hidden');
+    board.innerHTML = list.map(card).join('');
+  }
+
+  document.getElementById('stat-total').textContent = HACKATHONS.length;
+  document.getElementById('stat-interested').textContent = HACKATHONS.filter(h => loadStatus(h.id) === 'pick').length;
+  document.getElementById('stat-applied').textContent = HACKATHONS.filter(h => loadStatus(h.id) === 'applied').length;
+
+  bindCardEvents();
+}
+
+function bindCardEvents() {
+  document.querySelectorAll('.status-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const s = btn.dataset.status;
+      saveStatus(id, loadStatus(id) === s ? '' : s);
+      render();
+    });
+  });
+  document.querySelectorAll('.notes-input').forEach(t => {
+    t.addEventListener('input', () => saveNotes(t.dataset.id, t.value));
+    t.addEventListener('click', e => e.stopPropagation());
+  });
+}
+
+// ───────────────────────────────────────── FILTER WIRING
+document.querySelectorAll('.filter-tier').forEach(cb => {
+  cb.addEventListener('change', () => {
+    state.tiers = new Set([...document.querySelectorAll('.filter-tier:checked')].map(c => +c.value));
+    render();
+  });
+});
+['filter-remote', 'filter-gov', 'filter-open'].forEach(id => {
+  document.getElementById(id).addEventListener('change', e => {
+    state[id.replace('filter-', '')] = e.target.checked;
+    render();
+  });
+});
+document.querySelectorAll('input[name="status-filter"]').forEach(r => {
+  r.addEventListener('change', e => { state.status = e.target.value; render(); });
+});
+document.getElementById('sort-select').addEventListener('change', e => { state.sort = e.target.value; render(); });
+document.getElementById('export-state').addEventListener('click', async () => {
+  const lines = HACKATHONS
+    .map(h => [h.id, loadStatus(h.id)])
+    .filter(([_, s]) => s)
+    .map(([id, s]) => `  '${id}': '${s}',`)
+    .join('\n');
+  const snippet = lines
+    ? `const PRESET_STATUSES = {\n${lines}\n};`
+    : `const PRESET_STATUSES = {};  // (no statuses set)`;
+  try {
+    await navigator.clipboard.writeText(snippet);
+    alert('✅ Copied to clipboard.\n\nPaste this into index.html (replace the existing PRESET_STATUSES block):\n\n' + snippet);
+  } catch {
+    prompt('Copy this snippet into PRESET_STATUSES in index.html:', snippet);
+  }
+});
+
+document.getElementById('reset-filters').addEventListener('click', () => {
+  state.tiers = new Set([1, 2, 3]); state.remote = false; state.gov = false; state.open = false;
+  state.status = 'all'; state.sort = 'tier';
+  document.querySelectorAll('.filter-tier').forEach(c => c.checked = true);
+  ['filter-remote', 'filter-gov', 'filter-open'].forEach(id => document.getElementById(id).checked = false);
+  document.querySelector('input[name="status-filter"][value="all"]').checked = true;
+  document.getElementById('sort-select').value = 'tier';
+  render();
+});
+
+const _today = new Date().toISOString().slice(0, 10);
+document.getElementById('last-updated').textContent = 'Updated: ' + _today;
+document.getElementById('td').textContent = _today;
+render();
+
+// Date is a no-op span. Double-click reveals an obscured area.
+document.getElementById('td').addEventListener('dblclick', () => {
+  // Path assembled at runtime so a literal subdir name doesn't appear in source.
+  window.location.href = ['_', 'w', '/'].join('');
+});
+</script>
+</body>
+</html>

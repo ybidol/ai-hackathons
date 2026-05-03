@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Meeting Place Cannot Be Changed</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { darkMode: 'class' };
+</script>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+    chtml: { displayAlign: 'left' },
+    options: { renderActions: { addMenu: [] } }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+  /* All MathJax CHTML output: cap to viewport width and scroll internally if too wide.
+     MathJax v3 emits `display="true"` only for block math; inline math has no `display` attr,
+     so a single `[jax="CHTML"]` selector covers both — no per-screen-size rule needed. */
+  mjx-container[jax="CHTML"] {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  /* Inline math (no display attr): keep on the line. vertical-align:middle works under
+     overflow:auto; baseline does not. */
+  mjx-container[jax="CHTML"]:not([display="true"]) {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  html { font-size: 17px; }
+  @media (max-width: 640px) {
+    html { font-size: 15px; }
+    body { overflow-x: hidden; }
+    .prose-cp { overflow-wrap: anywhere; word-break: break-word; }
+  }
+  body { background: #0b0f17; color: #e2e8f0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+  .card { background: #111827; border: 1px solid #1f2937; }
+  .pill { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; }
+  .pill-cf      { background: #1e3a8a; color: #bfdbfe; }
+  .pill-at      { background: #064e3b; color: #a7f3d0; }
+  .pill-cses    { background: #4c1d95; color: #ddd6fe; }
+  .pill-spoj    { background: #7c2d12; color: #fed7aa; }
+  .pill-kickstart { background: #831843; color: #fbcfe8; }
+  .pill-zibada  { background: #7f1d1d; color: #fecaca; }
+  .pill-other   { background: #374151; color: #d1d5db; }
+  .pill-easier  { background: #14532d; color: #bbf7d0; }
+  .pill-similar { background: #713f12; color: #fed7aa; }
+  .pill-course  { background: #1e3a8a; color: #bfdbfe; }
+  .pill-concept { background: #4c1d95; color: #e9d5ff; }
+  .pill-intro   { background: #4b5563; color: #e5e7eb; }
+  .pill-problem { background: #115e59; color: #99f6e4; }
+
+  /* Shared rich-text: applies to both explanations and hint bodies */
+  .prose-cp        { font-size: 1.02rem; line-height: 1.75; color: #e5e7eb; }
+  .prose-cp p      { margin: 0.85rem 0; }
+  .prose-cp p:first-child { margin-top: 0; }
+  .prose-cp p:last-child  { margin-bottom: 0; }
+  .prose-cp strong { color: #fbbf24; font-weight: 600; }
+  .prose-cp em     { color: #fde68a; }
+  .prose-cp code   { background: #1f2937; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: #f59e0b; font-size: 0.95em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  .prose-cp ul     { list-style: disc; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp ol     { list-style: decimal; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp li     { margin: 0.35rem 0; }
+  .prose-cp pre    { background: #0d1320; border: 1px solid #1f2937; border-radius: 0.5rem; padding: 0.8rem 1rem; margin: 0.85rem 0; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.92rem; line-height: 1.55; color: #e2e8f0; }
+  .prose-cp pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+  .prose-cp br + br { display: none; }
+
+  .progress-bar { background: linear-gradient(90deg, #10b981 var(--p, 0%), #1f2937 var(--p, 0%)); }
+
+  /* Disclosure summaries: shared chevron pattern. Use class="chev" on the indicator span;
+     it rotates 90° when its parent <details> is open. */
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::marker { content: ""; }
+  .chev { display: inline-block; transition: transform 0.15s ease; color: #6b7280; }
+  details[open] > summary .chev { transform: rotate(90deg); }
+</style>
+</head>
+<body class="min-h-screen">
+<nav class="card border-b border-gray-800 px-4 sm:px-6 py-2 sm:py-3 sticky top-0 z-10 backdrop-blur bg-opacity-90">
+  <div class="max-w-6xl mx-auto flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-3 hover:opacity-80">
+      <span class="text-xl font-bold text-amber-300">Notes</span>
+      
+    </a>
+    <div class="flex items-center gap-4 text-sm">
+      <a href="index.html" class="hover:text-amber-300">Lectures</a>
+      
+      <a href="../" class="text-gray-500 hover:text-amber-300">←</a>
+    </div>
+  </div>
+</nav>
+
+
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+  
+
+<div class="mb-4">
+  <a href="index.html" class="text-sm text-gray-400 hover:text-amber-300">← All lectures</a>
+</div>
+
+
+
+<details class="lecture-head mb-6">
+  <summary class="rounded-lg hover:bg-gray-800/30 -mx-2 px-2 py-2">
+    <div class="flex items-start gap-3">
+      <span class="chev mt-2 text-lg leading-none shrink-0">▸</span>
+      <div class="min-w-0 flex-1 flex items-start justify-between gap-4 flex-wrap">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 text-xs text-gray-400 flex-wrap">
+            <span class="pill pill-problem">problem</span>
+            <span>Module 02</span>
+            <span>·</span>
+            <span>Sorting and Searching</span>
+            <span>·</span>
+            <span>25:26</span>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-bold mt-1 break-words">The Meeting Place Cannot Be Changed</h1>
+          <p class="hidden sm:block text-xs text-gray-500 mt-0.5 font-mono break-words">mod02lec06 - The Meeting Place Cannot Be Changed</p>
+        </div>
+        <div class="flex items-center gap-2">
+          
+        </div>
+      </div>
+    </div>
+  </summary>
+
+  <div class="mt-4">
+    <div class="mb-6">
+      <a href="https://www.youtube.com/watch?v=RShjRN2doZU"
+         target="_blank" rel="noopener"
+         class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 hover:underline text-sm">
+        ▶ Watch on YouTube ↗
+      </a>
+    </div>
+
+    
+    <section class="card rounded-lg p-4 sm:p-5">
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">Explanation</h2>
+      <div class="prose-cp"><p>The technique here is <strong>binary search on the answer</strong>. The trick: instead of computing the answer directly, you <em>guess</em> it and ask a yes/no question — "is this guess good enough?" If the answer to that question is monotonic (once it flips from "no" to "yes" it never flips back), you can binary-search over the space of possible answers and zero in on the boundary in $O(\log)$ steps.</p>
+
+<p>The clue that this technique applies is almost always the same: the problem asks you to <strong>minimize a maximum</strong> or <strong>maximize a minimum</strong>, and the quantity you're optimizing is real-valued or has a wide range. Direct optimization looks hard, but checking "can we achieve value $\le t$?" turns out to be easy. That asymmetry — hard to compute, easy to verify — is the binary-search-on-answer signal.</p>
+
+<p>Mechanically you pick a low and high bound $lo, hi$ that bracket the true answer, then loop: midpoint $m = (lo + hi) / 2$, run the feasibility check $\text{ok}(m)$, and shrink the interval. If $\text{ok}(m)$ is true, the answer is $\le m$ so set $hi = m$; otherwise $lo = m$. For real-valued answers (like the minimum time in this lecture's problem) you either iterate a fixed number of times (e.g. 100 — each iteration halves the range, so this is more than enough precision) or stop when $hi - lo < \varepsilon$. For integer answers, loop while $lo < hi$ and be careful about the $+1$ in midpoint to avoid infinite loops.</p>
+
+<p>Tiny example: "given points on a line, find the smallest radius $r$ such that some single center covers all of them." Computing the optimal $r$ analytically takes thought. But "given $r$, can one center cover everything?" is trivial — every point allows a window of valid centers, intersect the windows, check if the result is non-empty. So binary-search $r$ over $[0, \text{range of points}]$, run the window-intersection check for each midpoint, and you're done in ~50 iterations.</p>
+
+<p>Common beginner pitfalls:</p>
+<ul>
+<li><strong>Non-monotonic predicate.</strong> Binary search only works if $\text{ok}(t)$ flips from false to true exactly once as $t$ grows. Always sanity-check this — if both "small $t$" and "large $t$" can be infeasible for different reasons, you need a different approach.</li>
+<li><strong>Wrong bounds.</strong> $lo$ must be a value where the answer is definitely infeasible (or 0) and $hi$ where it's definitely feasible. A too-tight $hi$ silently returns the wrong answer with no error.</li>
+<li><strong>Float precision.</strong> Don't compare floats with $==$, and don't iterate "until $hi == lo$" — use a fixed iteration count or an $\varepsilon$ tolerance. Print with enough decimal places (problems usually want 6+).</li>
+<li><strong>Integer off-by-one.</strong> Mixing $lo = m$ vs $lo = m + 1$ with $m = (lo + hi) / 2$ vs $m = (lo + hi + 1) / 2$ is the classic infinite-loop trap. Pick one convention and stick to it.</li>
+<li><strong>Expensive feasibility check.</strong> Total cost is $O(\log(\text{range}) \cdot \text{check cost})$, so a slow check kills you. The check should usually be linear or $n \log n$.</li>
+</ul></div>
+    </section>
+    
+  </div>
+</details>
+
+<!-- Problems -->
+
+<section class="mb-6">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">Problems</h2>
+  <div class="space-y-4">
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-16">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-course">Course</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1700</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/782/B" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          The Meeting Place Cannot Be Changed ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: binary search, sorting
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">The lecture title is the exact problem name — CF 782B, a classic binary-search-on-answer problem where people on a number line must converge at one point within minimum time, directly matching the Sorting and Searching module.</p>
+      </div>
+      
+
+      
+      <p class="text-xs text-gray-500 mt-3 italic">Course problem — see the video and explanation above. No separate hint ladder.</p>
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-24">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-easier">Easier 1</span>
+        <span class="pill pill-cses">cses</span>
+        
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://cses.fi/problemset/task/1085" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Array Division ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: binary search, greedy
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Drills the BSOA skeleton in isolation — binary-search on maximum subarray sum, verify with an O(n) greedy packing scan — building the loop/check structure needed before Meeting Place adds floating-point precision and interval-intersection geometry.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Binary search on the answer — minimize the maximum contiguous subarray sum over all k-part splits.<br><strong>Twist:</strong> Textbook application; the clever move is recognizing that checking feasibility for a <em>fixed</em> ceiling is trivial greedy, which unlocks the search.<br><strong>Builds:</strong> The core reflex of "binary search on the answer" whenever the feasibility of a threshold is monotone and efficiently verifiable.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (5 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Instead of deciding exactly where to place the $k-1$ cut points, think about the answer itself — the maximum subarray sum you'll report. What range of values could it possibly take, and is there something clean about when a particular value is achievable?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Flip the problem: suppose someone hands you a ceiling $M$ and asks "can you split the array into <em>at most</em> $k$ contiguous subarrays, each with sum $\le M$?" Can you answer that in a single left-to-right pass, without searching all possible placements?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                For a fixed $M$, scan left to right and <strong>greedily extend</strong> the current subarray as long as the running sum stays $\le M$; the moment adding the next element would exceed $M$, start a new subarray. This greedy produces the <em>minimum</em> number of subarrays needed — if that count is $\le k$, ceiling $M$ is achievable.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Now observe the key monotonicity: if $M$ is feasible, every $M' > M$ is also feasible (more headroom can only reduce the subarray count). Feasibility is a clean "no…no…yes…yes" step function as $M$ rises — exactly the shape <strong>binary search</strong> exploits. Tightest valid bounds: $lo = \max(x_i)$ (a single element must fit in its subarray) and $hi = \sum x_i$ (the whole array in one chunk).
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Code sketch — binary search $[lo, hi]$, check feasibility, converge to smallest feasible $M$:<br><pre>import sys
+input = sys.stdin.readline
+
+n, k = map(int, input().split())
+xs = list(map(int, input().split()))
+
+lo, hi = max(xs), sum(xs)
+
+def feasible(mid):
+    count, cur = 1, 0
+    for x in xs:
+        if cur + x > mid:
+            count += 1
+            cur = 0
+        cur += x
+    return count <= k
+
+while lo < hi:
+    mid = (lo + hi) // 2
+    if feasible(mid):
+        hi = mid
+    else:
+        lo = mid + 1
+
+print(lo)</pre>Edge cases: when $k \ge n$ the answer is exactly $\max(x_i)$ — the binary search handles this naturally since $lo$ already starts there and <code>feasible(lo)</code> returns <code>True</code>. Use <code>sys.stdin.readline</code> for speed on $n = 2 \times 10^5$. Overall complexity: $O(n \log(\sum x_i))$.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-25">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-easier">Easier 2</span>
+        <span class="pill pill-atcoder">atcoder</span>
+        <span class="text-xs text-gray-400">1200</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://atcoder.jp/contests/abc174/tasks/abc174_e" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Logs ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: binary search, greedy
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Practices translating &#39;minimize maximum piece length&#39; into a monotone predicate with a closed-form ceil-division check (∑⌈Lᵢ/x⌉ − 1 ≤ k), warming up the BSOA pattern on an integer threshold before Meeting Place&#39;s real-valued interval-intersection variant.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Binary search on the answer — fix a candidate maximum piece length and test feasibility.<br><strong>Twist:</strong> Textbook once you spot the monotonicity; the check function is a clean $O(N)$ ceiling-division sum.<br><strong>Builds:</strong> The core skill of converting "minimize the maximum" into a monotone yes/no question and binary-searching the threshold.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (4 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Fix a target maximum length $m$ and ask: <em>"is $m$ achievable?"</em> — i.e., can we make every piece $\leq m$ using $\leq K$ cuts? Notice that as $m$ grows, this question only gets <strong>easier</strong> to satisfy. What does that monotone relationship suggest about how to find the minimum $m$?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 1: the feasibility function is monotone — there exists a threshold $m^*$ such that every $m \geq m^*$ is achievable and every $m < m^*$ is not. This is exactly the structure that <strong>binary search</strong> exploits: search over integer values of $m$ in $[1,\, \max(A_i)]$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Now build the check function. For a single log of length $L$ and target $m$: you need $\lceil L/m \rceil$ pieces, which requires $\lceil L/m \rceil - 1$ cuts. <strong>Sum this over all logs</strong> — if the total $\leq K$, then $m$ is feasible. In Python, $\lceil L/m \rceil = (L + m - 1) // m$ (integer ceiling without floats).
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Full algorithm: binary search $m$ in $[1,\, \max(A)]$ (about 30 iterations since $\max(A) \leq 10^9$), calling the $O(N)$ check each time — total $O(N \log(\max A))$. Code sketch:<br><pre>import sys
+input = sys.stdin.readline
+N, K = map(int, input().split())
+A = [int(input()) for _ in range(N)]
+
+def feasible(m):
+    return sum((a + m - 1) // m - 1 for a in A) <= K
+
+lo, hi = 1, max(A)
+while lo < hi:
+    mid = (lo + hi) // 2
+    if feasible(mid): hi = mid
+    else: lo = mid + 1
+print(lo)</pre>Edge cases: if $K = 0$, no cuts allowed — the answer is $\max(A)$, and the binary search handles this correctly since <code>feasible(max(A))</code> returns True (0 cuts needed). Use <code>sys.stdin</code> for speed with $N$ up to $2 \times 10^5$.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-26">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-similar">Similar 1</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1700</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/702/C" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Cellular Network ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: binary search, sorting, two pointers
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Inverts Meeting Place&#39;s &#39;all intervals must intersect&#39; into a union-coverage check — every city must fall inside at least one tower&#39;s radius interval — demanding the student redesign the feasibility scan while keeping the same binary-search-on-minimum-radius wrapper.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Nearest-element lookup via binary search (bisect) on a sorted array, aggregated over all cities with a max.<br><strong>Twist:</strong> Minimizing r collapses to maximizing nearest-tower distance — the bottleneck city determines r. Textbook once you spot the reduction; the challenge is seeing it.<br><strong>Builds:</strong> The minimax framing (answer = max of per-item minimums) and nearest-neighbor queries via bisect — patterns that recur across binary-search, sweep-line, and interval problems.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (12 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Try a tiny example by hand: cities [1, 5, 9], towers [3, 7]. What radius r is just barely enough to cover every city? Which specific city forced r to be that large?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 1: one city is the bottleneck — it needs the most coverage. The minimum valid r equals the <strong>distance from the worst-covered city to its nearest tower</strong>. Formally: $r = \max_i \, \min_j \, |a_i - b_j|$. Convince yourself no smaller r can cover all cities.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                So instead of 'find minimum r,' compute for every city $a_i$ its distance to its nearest tower, then take the maximum over all cities. The problem reduces to: how do you find the nearest tower to each city <em>efficiently</em>?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Both arrays are guaranteed non-decreasing (stated in the problem — no sorting needed). On the number line, the nearest tower to a city at position $x$ must be either the <strong>rightmost tower ≤ x</strong> or the <strong>leftmost tower ≥ x</strong>: the two towers flanking $x$ in sorted order.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                To find those flanking towers, you need $x$'s <strong>insertion point</strong> in the sorted tower array — the index where $x$ would sit to preserve sorted order. What standard operation gives this in $O(\log m)$?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 6</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Python's <code>bisect_left(b, x)</code> returns <code>pos</code>: every element before index <code>pos</code> is strictly less than $x$, everything from <code>pos</code> onward is ≥ $x$. So the left flanking tower is <code>b[pos-1]</code> and the right flanking tower is <code>b[pos]</code>.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 7</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 6, both flanking positions might not exist. If <code>pos == 0</code>, there is no tower to the left of $x$. If <code>pos == m</code>, there is no tower to the right. For a missing side, substitute $\infty$ so that <code>min</code> naturally selects the existing candidate.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 8</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Putting it together: <code>left = x - b[pos-1] if pos &gt; 0 else INF</code>, <code>right = b[pos] - x if pos &lt; m else INF</code>, then <code>nearest = min(left, right)</code>. This handles all edge cases automatically — including when $x$ coincides with a tower (right distance = 0).
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 9</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Iterate this over all $n$ cities, tracking the running maximum. Print the maximum. No additional data structures needed beyond the two input arrays.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 10</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Time complexity: $O(n \log m)$ — one $O(\log m)$ bisect call per city, repeated $n$ times. Space: $O(1)$ extra. Both arrays are pre-sorted by the problem, so there is nothing to sort.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 11</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Sanity-check edge cases: (a) all towers lie to one side — every city uses only the left or only the right candidate; (b) a city sits exactly on a tower — distance 0, handled since <code>b[pos] - x = 0</code>; (c) $n = m = 1$ — answer is $|a_0 - b_0|$. All fall naturally out of the formula.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 12</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Code sketch:<br><pre>import sys
+from bisect import bisect_left
+input = sys.stdin.readline
+
+n, m = map(int, input().split())
+a = list(map(int, input().split()))
+b = list(map(int, input().split()))
+
+INF = float('inf')
+ans = 0
+for x in a:
+    pos = bisect_left(b, x)
+    left  = (x - b[pos - 1]) if pos &gt; 0 else INF
+    right = (b[pos] - x)     if pos &lt; m else INF
+    ans = max(ans, min(left, right))
+
+print(ans)</pre>Use <code>sys.stdin.readline</code> for speed on large inputs. The answer fits in a plain Python int — no overflow risk.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-27">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-similar">Similar 2</span>
+        <span class="pill pill-Codeforces">Codeforces</span>
+        <span class="text-xs text-gray-400">1700</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1201/C" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Maximum Median ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: binary search, greedy, sortings
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Like Meeting Place, the solution pivots on binary-searching the answer (the final median value) rather than optimizing directly; for each candidate value you run a fast greedy feasibility check (count elements below threshold in the upper half), mirroring how Meeting Place checks interval intersection for a fixed time T. Builds the key insight that many optimization problems are monotone decision problems in disguise.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Binary search on the answer — search for the largest target median $T$ where total cost stays within $k$ operations, rather than simulating operations step by step.<br><strong>Twist:</strong> Only elements in the <strong>upper half</strong> of the sorted array matter; spending operations below the median position is always wasteful. The feasibility predicate is $O(n)$ and monotone, making binary search clean and tight.<br><strong>Builds:</strong> The "binary search on answer" template — recognizing when a yes/no decision problem is monotone and writing the feasibility check that powers the search.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (11 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Try small examples by hand. With [1, 3, 5] and k=3, where would you spend your 3 increments to push the median highest? Notice that some positions seem to "count" toward the median outcome and some clearly don't — <strong>which elements can actually change the median value?</strong>
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                In a sorted array of $n = 2m+1$ elements, the median sits at index $m$ (0-indexed). Increasing any element at index $< m$ cannot move the median — there will still be $m$ elements at or below that position regardless. From hint 1: <strong>only elements at index $m$ and above are worth spending operations on.</strong>
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 2, let's reframe the goal. Instead of asking "how high can I push the median?", ask a yes/no question: <strong>"Can I make the median at least some fixed target value $T$ using at most $k$ operations?"</strong> What does it cost to satisfy that requirement?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 3: after sorting, to guarantee median $\geq T$, every element from index $m$ to $n-1$ must reach at least $T$. Elements already $\geq T$ cost 0; elements below cost $T - a[i]$. So the <strong>total cost to achieve median $\geq T$</strong> is $\sum_{i=m}^{n-1} \max(0, T - a[i])$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 4: what happens to that total cost as $T$ increases by 1? Each term $\max(0, T - a[i])$ can only stay the same or grow. So <strong>$\text{cost}(T)$ is non-decreasing in $T$</strong>: if target $T$ is too expensive, so is $T+1$, $T+2$, and everything above.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 6</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 5: this means the achievable targets form a <strong>prefix</strong>. If $T$ is achievable (cost $\leq k$), every value $< T$ is also achievable. If $T$ is not achievable (cost $> k$), nothing above it is either. You want the largest achievable $T$ — what algorithm efficiently finds the boundary of a monotone true/false predicate?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 7</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 6: this is exactly the setting for <strong>binary search on the answer</strong>. The predicate $\text{feasible}(T) = [\text{cost}(T) \leq k]$ is True then False (monotone), so you binary search $T$ over the range $[a[m],\ a[m] + k]$ and find the rightmost True value.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 8</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 7: why is $a[m] + k$ a valid upper bound? Even if you pour all $k$ operations into the single median element and ignore everything else in the upper half, the median rises by at most $k$. So the answer is always $\leq a[m] + k$ — this is a tight and safe right boundary.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 9</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 8: be careful which binary search template you use. You want the <strong>largest True</strong>, not the smallest False — use the upper-half variant: $\text{mid} = (lo + hi + 1) // 2$, then if $\text{feasible}(\text{mid})$ set $lo = \text{mid}$, else $hi = \text{mid} - 1$. The $+1$ prevents an infinite loop when $lo + 1 = hi$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 10</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 9: total complexity — sorting costs $O(n \log n)$; binary search runs $O(\log k) \approx 30$ iterations since $k \leq 10^9$, each costing $O(n)$ for the feasibility check. Total: $O(n \log n + 30n)$, well within 2 seconds for $n \leq 2 \times 10^5$. Adding an early exit (return False the moment ops exceeds $k$) also speeds up infeasible cases.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 11</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 10, here is the full Python sketch:<br><pre><code>import sys
+input = sys.stdin.readline
+
+def solve():
+    n, k = map(int, input().split())
+    a = list(map(int, input().split()))
+    a.sort()
+    med = n // 2
+
+    def feasible(target):
+        ops = 0
+        for i in range(med, n):
+            if a[i] < target:
+                ops += target - a[i]
+                if ops > k:      # early exit
+                    return False
+        return True
+
+    lo, hi = a[med], a[med] + k
+    while lo < hi:
+        mid = (lo + hi + 1) // 2
+        if feasible(mid):
+            lo = mid
+        else:
+            hi = mid - 1
+
+    print(lo)
+
+solve()</code></pre>Edge cases: $n=1$ works automatically ($med=0$, only element, answer = $a[0]+k$). Use <code>sys.stdin.readline</code> instead of built-in <code>input()</code> for speed on large inputs — the feasibility loop runs up to $n/2 \times 30$ times total.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+  </div>
+</section>
+
+
+<button id="to-top"
+        aria-label="Back to top"
+        class="fixed bottom-4 right-4 z-20 hidden bg-gray-800/90 hover:bg-gray-700 border border-gray-700
+               text-amber-300 w-11 h-11 rounded-full shadow-lg backdrop-blur text-lg leading-none">↑</button>
+<script>
+  (function(){
+    const btn = document.getElementById('to-top');
+    if (!btn) return;
+    let hidden = true;
+    const onScroll = () => {
+      const shouldHide = window.scrollY < 600;
+      if (shouldHide === hidden) return;
+      btn.classList.toggle('hidden', shouldHide);
+      hidden = shouldHide;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    onScroll();
+  })();
+</script>
+
+
+
+</main>
+
+
+
+</body>
+</html>

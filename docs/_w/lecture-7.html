@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Trouble Sort</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { darkMode: 'class' };
+</script>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+    chtml: { displayAlign: 'left' },
+    options: { renderActions: { addMenu: [] } }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+  /* All MathJax CHTML output: cap to viewport width and scroll internally if too wide.
+     MathJax v3 emits `display="true"` only for block math; inline math has no `display` attr,
+     so a single `[jax="CHTML"]` selector covers both — no per-screen-size rule needed. */
+  mjx-container[jax="CHTML"] {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  /* Inline math (no display attr): keep on the line. vertical-align:middle works under
+     overflow:auto; baseline does not. */
+  mjx-container[jax="CHTML"]:not([display="true"]) {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  html { font-size: 17px; }
+  @media (max-width: 640px) {
+    html { font-size: 15px; }
+    body { overflow-x: hidden; }
+    .prose-cp { overflow-wrap: anywhere; word-break: break-word; }
+  }
+  body { background: #0b0f17; color: #e2e8f0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.6; }
+  .card { background: #111827; border: 1px solid #1f2937; }
+  .pill { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; }
+  .pill-cf      { background: #1e3a8a; color: #bfdbfe; }
+  .pill-at      { background: #064e3b; color: #a7f3d0; }
+  .pill-cses    { background: #4c1d95; color: #ddd6fe; }
+  .pill-spoj    { background: #7c2d12; color: #fed7aa; }
+  .pill-kickstart { background: #831843; color: #fbcfe8; }
+  .pill-zibada  { background: #7f1d1d; color: #fecaca; }
+  .pill-other   { background: #374151; color: #d1d5db; }
+  .pill-easier  { background: #14532d; color: #bbf7d0; }
+  .pill-similar { background: #713f12; color: #fed7aa; }
+  .pill-course  { background: #1e3a8a; color: #bfdbfe; }
+  .pill-concept { background: #4c1d95; color: #e9d5ff; }
+  .pill-intro   { background: #4b5563; color: #e5e7eb; }
+  .pill-problem { background: #115e59; color: #99f6e4; }
+
+  /* Shared rich-text: applies to both explanations and hint bodies */
+  .prose-cp        { font-size: 1.02rem; line-height: 1.75; color: #e5e7eb; }
+  .prose-cp p      { margin: 0.85rem 0; }
+  .prose-cp p:first-child { margin-top: 0; }
+  .prose-cp p:last-child  { margin-bottom: 0; }
+  .prose-cp strong { color: #fbbf24; font-weight: 600; }
+  .prose-cp em     { color: #fde68a; }
+  .prose-cp code   { background: #1f2937; padding: 0.1rem 0.4rem; border-radius: 0.3rem; color: #f59e0b; font-size: 0.95em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+  .prose-cp ul     { list-style: disc; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp ol     { list-style: decimal; padding-left: 1.6rem; margin: 0.7rem 0; }
+  .prose-cp li     { margin: 0.35rem 0; }
+  .prose-cp pre    { background: #0d1320; border: 1px solid #1f2937; border-radius: 0.5rem; padding: 0.8rem 1rem; margin: 0.85rem 0; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.92rem; line-height: 1.55; color: #e2e8f0; }
+  .prose-cp pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+  .prose-cp br + br { display: none; }
+
+  .progress-bar { background: linear-gradient(90deg, #10b981 var(--p, 0%), #1f2937 var(--p, 0%)); }
+
+  /* Disclosure summaries: shared chevron pattern. Use class="chev" on the indicator span;
+     it rotates 90° when its parent <details> is open. */
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::marker { content: ""; }
+  .chev { display: inline-block; transition: transform 0.15s ease; color: #6b7280; }
+  details[open] > summary .chev { transform: rotate(90deg); }
+</style>
+</head>
+<body class="min-h-screen">
+<nav class="card border-b border-gray-800 px-4 sm:px-6 py-2 sm:py-3 sticky top-0 z-10 backdrop-blur bg-opacity-90">
+  <div class="max-w-6xl mx-auto flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-3 hover:opacity-80">
+      <span class="text-xl font-bold text-amber-300">Notes</span>
+      
+    </a>
+    <div class="flex items-center gap-4 text-sm">
+      <a href="index.html" class="hover:text-amber-300">Lectures</a>
+      
+      <a href="../" class="text-gray-500 hover:text-amber-300">←</a>
+    </div>
+  </div>
+</nav>
+
+
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+  
+
+<div class="mb-4">
+  <a href="index.html" class="text-sm text-gray-400 hover:text-amber-300">← All lectures</a>
+</div>
+
+
+
+<details class="lecture-head mb-6">
+  <summary class="rounded-lg hover:bg-gray-800/30 -mx-2 px-2 py-2">
+    <div class="flex items-start gap-3">
+      <span class="chev mt-2 text-lg leading-none shrink-0">▸</span>
+      <div class="min-w-0 flex-1 flex items-start justify-between gap-4 flex-wrap">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 text-xs text-gray-400 flex-wrap">
+            <span class="pill pill-problem">problem</span>
+            <span>Module 02</span>
+            <span>·</span>
+            <span>Sorting and Searching</span>
+            <span>·</span>
+            <span>26:41</span>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-bold mt-1 break-words">Trouble Sort</h1>
+          <p class="hidden sm:block text-xs text-gray-500 mt-0.5 font-mono break-words">mod02lec05 - Trouble Sort</p>
+        </div>
+        <div class="flex items-center gap-2">
+          
+        </div>
+      </div>
+    </div>
+  </summary>
+
+  <div class="mt-4">
+    <div class="mb-6">
+      <a href="https://www.youtube.com/watch?v=g9UJdtWrXy4"
+         target="_blank" rel="noopener"
+         class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 hover:underline text-sm">
+        ▶ Watch on YouTube ↗
+      </a>
+    </div>
+
+    
+    <section class="card rounded-lg p-4 sm:p-5">
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">Explanation</h2>
+      <div class="prose-cp"><p>The trick to most "weird sort" problems isn't to actually run the weird sort — it's to figure out <strong>which permutations the operation can reach</strong>. Whenever you're given a sort defined by "swap two things if they satisfy condition $C$", ask yourself: what is the <em>invariant</em>? Something stays the same no matter how many swaps you do, and that invariant tells you exactly which final arrangements are possible.</p>
+
+<p>Trouble Sort is the canonical example. It's like bubble sort, except you're only allowed to compare elements at indices of the <strong>same parity</strong> — even-indexed positions can swap with each other, odd-indexed with each other, but never across. So once you decompose the array into "elements at even indices" and "elements at odd indices", those two groups can be permuted freely <em>within themselves</em> but never mix. The reachable end states are exactly: even-index slots filled (in any order) by the original even-index elements, same for odd.</p>
+
+<p>That gives a clean algorithm: split the array into two subarrays by index parity, sort each one independently, interleave them back, and check if the result is globally non-decreasing. If yes, Trouble Sort succeeds; if some adjacent pair $a_i > a_{i+1}$ is still out of order, it's because the smaller value lives in the "wrong parity class" and no amount of allowed swaps can fix that.</p>
+
+<p>Tiny example: array $[8, 9, 7]$ at indices $0, 1, 2$. The even-index group is $[8, 7]$ and the odd-index group is $[9]$. Sorting each gives $[7, 8]$ and $[9]$, then interleaving back yields $[7, 9, 8]$. That's still not sorted ($9 > 8$), so the answer is "fail at index $1$". Compare with $[8, 7, 9]$: even group $[8, 9] \to [8, 9]$, odd group $[7]$, interleaved $[8, 7, 9]$ — also fails. The point is you never simulate the swaps; you just ask "can the parity-restricted permutation produce a sorted array?"</p>
+
+<p>The general lesson: when an operation has a restriction (parity, adjacency, "only equal values", "only when sum is even", etc.), find the equivalence classes of positions/values that the operation preserves, then sort within each class and check feasibility. This pattern shows up constantly — restricted swaps, restricted reversals, restricted rotations all decompose this way.</p>
+
+<p>Common beginner pitfalls: <ul><li>Trying to <strong>simulate</strong> the modified sort step-by-step. With $n$ up to $10^5$ this is $O(n^2)$ comparisons and times out — and worse, it doesn't generalize to other "weird operation" problems where the operation count is unbounded.</li><li>Forgetting that <strong>$0$-indexed vs $1$-indexed parity matters</strong>. Read the problem carefully; getting parity flipped is a classic WA.</li><li>Reporting the wrong index on failure — the problem usually wants the first $i$ such that $a_i > a_{i+1}$, not the first "out-of-place" element.</li><li>Assuming distinct values. With duplicates the answer can flip from YES to NO depending on whether equal values straddle the parity boundary, so handle ties carefully.</li><li>Over-engineering: people reach for segment trees or BITs because "it's a sorting problem". Two <code>sort()</code> calls and one linear scan is $O(n \log n)$ and that's the whole solution.</li></ul></p></div>
+    </section>
+    
+  </div>
+</details>
+
+<!-- Problems -->
+
+<section class="mb-6">
+  <h2 class="text-sm font-semibold uppercase tracking-wider text-amber-300 mb-3">Problems</h2>
+  <div class="space-y-4">
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-19">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-course">Course</span>
+        <span class="pill pill-zibada">zibada</span>
+        
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://zibada.guru/gcj/2019qr/problems/#B" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Trouble Sort ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: sorting, observation, math
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">The lecture title directly matches &#39;Trouble Sort&#39;, which is Google Code Jam 2019 Qualification Round Problem B — a well-known sorting puzzle where the key insight is that the modified sort fails unless at least 3 distinct values exist among the elements.</p>
+      </div>
+      
+
+      
+      <p class="text-xs text-gray-500 mt-3 italic">Course problem — see the video and explanation above. No separate hint ladder.</p>
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-32">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-easier">Easier 1</span>
+        <span class="pill pill-cses">cses</span>
+        
+        <span class="text-xs text-red-400">⚠ URL not verified</span>
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://cses.fi/problemset/task/1213" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Counting Inversions ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: inversions, merge sort, fenwick tree
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Counting inversions equals the minimum adjacent-swap count to sort an array — directly trains the parity-of-permutation check that determines whether Trouble Sort can succeed when the input has only 2 distinct values.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Left-to-right sweep with a Fenwick tree (BIT) answering "how many elements ≤ x have we seen so far" — a core dynamic prefix-frequency pattern.<br><strong>Twist:</strong> Textbook application; the only non-obvious step is decomposing "count greater" into a prefix query, then handling coordinate compression when raw values reach $10^9$.<br><strong>Builds:</strong> Fluency with Fenwick trees as a drop-in replacement for dynamic prefix sums, and the habit of decomposing counting problems into "elements seen so far that satisfy property P".
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (5 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Scan the array left to right. When you arrive at position $j$, some elements are already "behind" you. <strong>How many inversions does $a[j]$ contribute at the moment you first see it?</strong> Try a 4-element example by hand — write down the contribution of each element as you encounter it.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 1: every element to the left of $j$ that is <em>strictly greater</em> than $a[j]$ forms an inversion with $j$. So the total inversion count equals $\sum_j (\text{number of previous elements} > a[j])$. The problem is now: <strong>answer this "count of larger predecessors" query efficiently for each $j$.</strong>
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 2, "count of previous elements $> a[j]$" $=$ (number of elements inserted so far) $-$ (number of previous elements $\leq a[j]$). The first part is just $j$. <strong>So you need one query per step: how many values $\leq a[j]$ have already been inserted?</strong> That is a prefix-sum on a frequency array.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 3, maintain a frequency array $freq[v]$, and query $\sum_{v=1}^{x} freq[v]$ after each insertion. Naive prefix sums cost $O(n)$ per query. A <strong>Fenwick tree (BIT)</strong> reduces both point-update and prefix-query to $O(\log n)$, giving $O(n \log n)$ overall. Because $a[i]$ can reach $10^9$, <strong>coordinate-compress</strong> first: replace each value with its rank in the sorted unique array.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Full algorithm: (1) coordinate-compress — sort unique values, map each $a[i]$ to its 1-based rank. (2) Init a BIT of size $n$. (3) Sweep left to right: for each $a[i]$, add $i - 1 - \text{bit.query}(\text{rank}[a[i]])$ to the answer (that is, predecessors minus those $\leq a[i]$), then call $\text{bit.update}(\text{rank}[a[i]], 1)$. (4) Print the total. <br><strong>Code sketch:</strong><br><pre>import sys
+input = sys.stdin.readline
+
+def bit_update(t, i, v):
+    while i < len(t): t[i] += v; i += i & -i
+def bit_query(t, i):
+    s = 0
+    while i > 0: s += t[i]; i -= i & -i
+    return s
+
+n = int(input())
+a = list(map(int, input().split()))
+sorted_u = sorted(set(a))
+rank = {v: i+1 for i, v in enumerate(sorted_u)}
+bit = [0] * (n + 2)
+ans = 0
+for idx, x in enumerate(a):
+    r = rank[x]
+    ans += idx - bit_query(bit, r)  # predecessors - those <= x
+    bit_update(bit, r, 1)
+print(ans)</pre><strong>Edge cases:</strong> all equal (answer 0), already sorted (0), reverse sorted ($n(n-1)/2$). No overflow in Python. Use <code>sys.stdin</code> for speed.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-33">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-easier">Easier 2</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1400</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1327/D" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Infinite Path ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: permutations, cycles, strings
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Requires following permutation cycle chains (p[p[p[...]]] repeated traversal) and tracking a color pattern, drilling the cycle-structure analysis that underlies which states are reachable under Trouble Sort&#39;s 3-element sort operations.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Cycle decomposition of a permutation — follow each element under repeated application of $p$ to find its cycle, then reason about what $p^k$ looks like inside each cycle.<br><strong>Twist:</strong> An infinite path in $p^k$ is a <em>monochromatic sub-cycle</em> inside a length-$L$ cycle. Only $k$ values that are divisors of $L$ can be optimal, collapsing a potentially huge search into a small one.<br><strong>Builds:</strong> The core skill of reasoning about $\gcd(L, k)$ to understand how cycles split under iteration — a pattern that recurs across permutation and number-theory problems.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (5 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Trace what happens when you follow $p$ repeatedly from any starting element — you never escape: you eventually loop back to where you started. Every element belongs to exactly one such closed cycle. Now ask: when you follow $p^k$ instead of $p$, how does your path through a length-$L$ cycle change?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 1: within a cycle of length $L$, applying $p^k$ visits elements spaced $k$ apart (indices mod $L$). The sub-cycle you trace has size $L / \gcd(L, k)$, and the full cycle partitions into exactly $\gcd(L, k)$ such non-overlapping sub-cycles — one for each starting offset $0, 1, \ldots, \gcd(L,k)-1$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 2: an infinite path in $p^k$ exists iff at least one of those sub-cycles is <strong>monochromatic</strong>. What matters is only $d = \gcd(L, k)$, not $k$ itself. Since $d$ divides $L$, choosing $k = d$ directly achieves the same partition — so you only ever need to test divisors of $L$ as candidate answers.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Full algorithm: (1) decompose $p$ into cycles; (2) for each cycle stored as a list of length $L$, enumerate divisors of $L$ in sorted order; (3) for each divisor $d$, scan all $d$ sub-cycles — starting offsets $0 \ldots d{-}1$, each stepping by $d$ — and test for uniform color in $O(L)$ total; (4) the first $d$ that succeeds is the best answer from that cycle; (5) the global answer is the minimum across all cycles. Complexity: $O(n \cdot \tau(n))$ where $\tau$ is the average divisor count — fast in practice.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Python sketch — key pieces: <code>import sys; input = sys.stdin.readline</code>. Extract cycles with a <code>visited</code> boolean array. For each cycle as a list, compute divisors of its length (trial division to $\sqrt{L}$, collect both factors, sort). For each divisor <code>d</code>: <code>for start in range(d): if len(set(cycle[start::d])) == 1: ans = min(ans, d); break</code> — break both loops once found. Edge case: a fixed point (cycle length 1) trivially gives $k=1$, so initialise <code>ans</code> to <code>n</code> and let it be beaten. Collect all test-case results and print with <code>'\n'.join(map(str, results))</code>.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-34">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-similar">Similar 1</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1600</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/1253/C" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Swaps Again ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: sorting, constructive, greedy
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Checks whether b can become a using only symmetric-index swaps (i ↔ n+1−i) by identifying the invariant — the sorted multiset of (min, max) symmetric pairs — which is the same &#39;find what&#39;s preserved under restricted operations&#39; reasoning Trouble Sort demands, at one notch higher difficulty.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Greedy scheduling + incremental recurrence over a sorted array.<br><strong>Twist:</strong> You must simultaneously answer n independent questions (one per k), each requiring both an optimal subset and an optimal schedule — the key is showing both choices collapse to sorted order, then spotting a sparse-increment structure that lets you build all n answers in O(1) per step.<br><strong>Builds:</strong> Rearrangement inequality reasoning (largest values to smallest day-multipliers) and recognizing that "which positions gain a +1 coefficient" forms a modular arithmetic pattern, collapsing an apparent O(n)-per-step delta into a one-liner.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (8 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Pick a tiny example — n=4, m=2, a=[3,1,4,2]. For k=3, try a few different choices of which 3 sweets to take and different ways to schedule them across days. <strong>Does the order of sweets within a single day affect the penalty?</strong> What about which sweets land on day 1 vs day 2 — does that matter?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Order within a day doesn't matter (same multiplier for all). What matters is the day assignment: day 1 has multiplier 1 (cheapest), day 2 has multiplier 2, etc., and each day holds exactly m sweets. If you've already fixed which k sweets to eat, <strong>how should you fill day 1, then day 2, etc. to minimize the total?</strong>
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 2: fill the earliest days with the <strong>highest-concentration sweets</strong>. The coefficients across the k slots, listed in ascending order, are $\lceil 1/m \rceil, \lceil 2/m \rceil, \ldots, \lceil k/m \rceil$ — that is, m ones, then m twos, etc. By the <strong>rearrangement inequality</strong>, pairing the largest $a$ values with the smallest coefficients minimizes $\sum c_i \cdot a_i$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Now which k sweets should you choose in the first place? Suppose chosen set S contains sweet $u$ and some unchosen sweet $v$ satisfies $a_v < a_u$. Swapping $u$ for $v$ can only reduce (or maintain) the total — $v$ is smaller, so every coefficient that multiplies it contributes less. <strong>The optimal k sweets are always the k smallest values.</strong> Sort $a$ ascending once; for each k, take $a_1, \ldots, a_k$.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                With $a$ sorted ascending (1-indexed), the $i$-th element has rank $(k-i+1)$ from the top among the chosen k, so its day coefficient is $\lceil (k-i+1)/m \rceil$. Therefore $\text{ans}[k] = \sum_{i=1}^{k} \lceil (k-i+1)/m \rceil \cdot a_i$. Now write out $\text{ans}[k] - \text{ans}[k-1]$ term by term — <strong>which existing coefficients increase when k grows by 1, and by exactly how much?</strong>
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 6</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                The coefficient of existing $a_i$ (for $i \le k-1$) changes from $\lceil (k-i)/m \rceil$ to $\lceil (k-i+1)/m \rceil$. Setting $j = k-i+1$, this difference is $\lceil j/m \rceil - \lceil (j-1)/m \rceil$, which equals 1 exactly when $j \equiv 1 \pmod{m}$, i.e., when <strong>$i \equiv k \pmod{m}$</strong> — and 0 otherwise. The new term $a_k$ always contributes 1. So the full increment is: $\text{ans}[k] - \text{ans}[k-1] = a_k + a_{k-m} + a_{k-2m} + \cdots$
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 7</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Define $D[k]$ as that diagonal sum: $D[k] = a_k + a_{k-m} + a_{k-2m} + \cdots$ (all indices $\equiv k \pmod{m}$ down to $\ge 1$). This satisfies a one-step recurrence: <strong>$D[k] = a_k + D[k-m]$</strong> (base case $D[k] = a_k$ when $k \le m$). Then $\text{ans}[k] = \text{ans}[k-1] + D[k]$, computable left-to-right in $O(1)$ per step after an $O(n \log n)$ sort.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 8</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Full solution — sort $a$ ascending (0-indexed), then for k from 1 to n: <code>D[k] = a[k-1] + (D[k-m] if k > m else 0)</code> and <code>ans[k] = ans[k-1] + D[k]</code>. Output <code>ans[1..n]</code>. Use <code>import sys; input = sys.stdin.readline</code> and <code>sys.stdout.write(' '.join(map(str, ans[1:])) + '\n')</code> — printing 200 000 numbers with repeated <code>print()</code> calls will TLE. Edge case: if $m \ge n$, all k sweets fit on day 1 so every coefficient is 1 and ans[k] = prefix sum of k smallest; the formula handles this automatically since $D[k] = a_k$ for all $k \le m$. Total complexity $O(n \log n)$.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+    
+    
+    
+    <details class="problem card rounded-lg" id="problem-35">
+      <summary class="flex items-start gap-2 sm:gap-3 flex-wrap p-3 sm:p-4 rounded-lg
+                      hover:bg-gray-800/30">
+        <span class="chev mt-0.5">▸</span>
+        <span class="pill pill-similar">Similar 2</span>
+        <span class="pill pill-codeforces">codeforces</span>
+        <span class="text-xs text-gray-400">1900</span>
+        
+        <span class="basis-full h-0 sm:hidden" aria-hidden="true"></span>
+        <a href="https://codeforces.com/problemset/problem/340/E" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()"
+           class="font-semibold text-blue-400 hover:underline min-w-0 break-words">
+          Iahub and Permutations ↗
+        </a>
+        
+      </summary>
+
+      <div class="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+      
+      <div class="mt-2 text-xs text-gray-500">
+        Tags: permutations, inclusion-exclusion, combinatorics, sorting
+      </div>
+      
+
+      
+      <div class="mt-3 bg-gray-800/40 border-l-4 border-amber-600 px-3 py-2 text-sm text-gray-200">
+        <span class="font-semibold text-amber-300 text-xs uppercase tracking-wider">Why this problem</span>
+        <p class="mt-1">Counts valid permutation completions avoiding forbidden (position, value) pairs via inclusion-exclusion on sorted forbidden positions — extends Trouble Sort&#39;s &#39;which permutations are achievable&#39; question into full combinatorial counting at near-Expert difficulty.</p>
+      </div>
+      
+
+      
+        
+        <details class="disclose mt-3 border border-gray-800 rounded">
+          <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+            <span class="chev">▸</span>
+            <span class="text-amber-400">Style (canonical pattern + twist)</span>
+          </summary>
+          <div class="px-4 py-3 prose-cp border-t border-gray-800">
+            <strong>Canonical pattern:</strong> Inclusion-exclusion over a small set of dangerous (value, position) pairs — a standard derangement-counting technique applied to a partial permutation.<br><strong>Twist:</strong> Most positions are already fixed; only the blank slots matter, and among the missing values, only those whose value equals a blank index can ever create a fixed point. The problem reduces to identifying these "dangerous" pairs and running inclusion-exclusion over just them.<br><strong>Builds:</strong> Core skill is setting up inclusion-exclusion precisely: identifying which events are independent, recognising that all same-size intersections contribute equally, and collapsing the alternating sum into a closed-form formula.
+          </div>
+        </details>
+        
+
+        
+        <div class="mt-4">
+          <h3 class="text-xs uppercase tracking-wider text-amber-300 mb-2">Hint ladder (11 hints)</h3>
+          <div class="space-y-1.5">
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 1</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Look at the two lists you can extract from the input: the set of <strong>blank positions</strong> (indices where -1 appears) and the set of <strong>missing values</strong> (values from 1..n not present). You need to fill each blank with a missing value, one-to-one. When is it even <em>possible</em> for a particular missing value to create a fixed point?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 2</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                A fixed point requires value $v$ at position $v$. So a missing value $v$ can only ever cause a fixed point if position $v$ happens to be one of the blank positions. Partition missing values into two groups: those $v$ where position $v$ is blank (<strong>dangerous</strong>), and the rest (<strong>safe</strong>). Safe values cannot create a fixed point no matter where they land.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 3</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Let $k$ = number of blanks, $m$ = number of dangerous values. Total ways to fill $k$ blanks with $k$ missing values (ignoring the no-fixed-point rule) is $k!$. The constraint only ever touches the $m$ dangerous values — safe ones are unconstrained. We want to count arrangements where none of the $m$ dangerous values land at their own index.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 4</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Define event $A_j$ as "dangerous value $j$ is placed at position $j$." We want to count arrangements outside $A_1 \cup A_2 \cup \ldots \cup A_m$. Before reaching for inclusion-exclusion, ask: if you forced any specific $i$ dangerous pairs to all be simultaneously fixed, how many ways are there to fill the remaining $k - i$ blanks?
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 5</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 4: forcing $i$ specific dangerous pairs each occupies one unique blank with one unique value, leaving $k - i$ blanks to fill freely in $(k-i)!$ ways. Crucially, this count is identical for <em>every</em> choice of which $i$ pairs you force — the dangerous pairs are fully independent (no two share a blank or a value). This symmetry is what makes the inclusion-exclusion collapse.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 6</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                From hint 5: in the inclusion-exclusion expansion, every size-$i$ intersection contributes $(k-i)!$, and there are $\binom{m}{i}$ size-$i$ subsets of dangerous pairs. So the alternating sum has only $m+1$ terms: $\text{answer} = \sum_{i=0}^{m} (-1)^i \cdot \binom{m}{i} \cdot (k - i)!$
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 7</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Verify on the note's example. Input $[-,-,4,3,-]$, $n=5$: blanks at positions $\{1,2,5\}$, missing $\{1,2,5\}$, all three dangerous so $m=3$, $k=3$. Formula: $1\cdot6 - 3\cdot2 + 3\cdot1 - 1\cdot1 = 6-6+3-1 = 2$. Matches the two valid permutations in the problem note.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 8</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Why does the alternating sum count exactly the zero-fixed-point arrangements? An arrangement with exactly $r$ dangerous fixed points gets counted $\sum_{i=0}^{r}(-1)^i\binom{r}{i} = [r=0]$ times — this is the standard inclusion-exclusion identity. So only arrangements with $r=0$ survive with weight 1; all others cancel.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 9</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                Implementation plan: (1) find blank positions as a 1-indexed set; (2) find missing values $= \{1..n\} \setminus \text{present}$; (3) compute $m = |\{v \in \text{missing} : v \in \text{blank\_pos}\}|$; (4) precompute factorials mod $10^9+7$; (5) precompute modular inverse factorials via Fermat's little theorem; (6) sum the $m+1$ terms with alternating signs.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 10</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                For binomial coefficients ($m \le n \le 2000$): precompute $\text{fact}[i]$ up to $n$, then set $\text{inv\_fact}[n] = \text{fact}[n]^{\text{MOD}-2} \bmod \text{MOD}$ and fill backwards: $\text{inv\_fact}[i] = \text{inv\_fact}[i+1]\cdot(i+1) \bmod \text{MOD}$. Then $\binom{a}{b} = \text{fact}[a]\cdot\text{inv\_fact}[b]\cdot\text{inv\_fact}[a-b] \bmod \text{MOD}$. Edge case $m=0$: loop only runs $i=0$ and returns $k!$ — correct, since zero dangerous values means all $k!$ arrangements are valid.
+              </div>
+            </details>
+            
+            <details class="disclose border border-gray-800 rounded">
+              <summary class="px-3 py-2.5 sm:py-2 hover:bg-gray-800/60 rounded flex items-center gap-2 select-none">
+                <span class="chev">▸</span>
+                <span class="font-mono text-amber-400">Hint 11</span>
+              </summary>
+              <div class="px-4 py-3 prose-cp border-t border-gray-800">
+                <strong>Code sketch (Python):</strong><br><pre>import sys
+MOD = 10**9 + 7
+
+def solve():
+    data = sys.stdin.read().split()
+    n = int(data[0])
+    a = list(map(int, data[1:n+1]))
+    blank_pos = {i+1 for i, x in enumerate(a) if x == -1}
+    present   = {x for x in a if x != -1}
+    missing   = set(range(1, n+1)) - present
+    k = len(blank_pos)
+    m = sum(1 for v in missing if v in blank_pos)
+    fact = [1]*(n+1)
+    for i in range(1, n+1): fact[i] = fact[i-1]*i % MOD
+    inv_fact = [1]*(n+1)
+    inv_fact[n] = pow(fact[n], MOD-2, MOD)
+    for i in range(n-1, -1, -1): inv_fact[i] = inv_fact[i+1]*(i+1) % MOD
+    def C(a, b):
+        if b < 0 or b > a: return 0
+        return fact[a]*inv_fact[b]%MOD*inv_fact[a-b]%MOD
+    ans = 0
+    for i in range(m+1):
+        term = C(m, i)*fact[k-i] % MOD
+        ans = (ans+term)%MOD if i%2==0 else (ans-term+MOD)%MOD
+    print(ans)
+
+solve()</pre>Watch the alternating sign: add for even $i$, subtract for odd. Use <code>sys.stdin.read()</code> for speed. No off-by-one risk on factorials since $k - i \ge 0$ always holds.
+              </div>
+            </details>
+            
+          </div>
+        </div>
+        
+      
+
+      
+      </div>
+    </details>
+    
+  </div>
+</section>
+
+
+<button id="to-top"
+        aria-label="Back to top"
+        class="fixed bottom-4 right-4 z-20 hidden bg-gray-800/90 hover:bg-gray-700 border border-gray-700
+               text-amber-300 w-11 h-11 rounded-full shadow-lg backdrop-blur text-lg leading-none">↑</button>
+<script>
+  (function(){
+    const btn = document.getElementById('to-top');
+    if (!btn) return;
+    let hidden = true;
+    const onScroll = () => {
+      const shouldHide = window.scrollY < 600;
+      if (shouldHide === hidden) return;
+      btn.classList.toggle('hidden', shouldHide);
+      hidden = shouldHide;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    onScroll();
+  })();
+</script>
+
+
+
+</main>
+
+
+
+</body>
+</html>
